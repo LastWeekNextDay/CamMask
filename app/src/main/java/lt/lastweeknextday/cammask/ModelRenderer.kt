@@ -10,18 +10,16 @@ import com.google.android.filament.VertexBuffer.AttributeType
 import com.google.android.filament.VertexBuffer.VertexAttribute.*
 import com.google.ar.core.AugmentedFace
 import com.google.ar.core.TrackingState
+import com.google.ar.sceneform.rendering.Vertex
 import dev.romainguy.kotlin.math.Float3
 import io.github.sceneview.ar.ARSceneView
 import io.github.sceneview.ar.node.AugmentedFaceNode
+import io.github.sceneview.managers.build
+import io.github.sceneview.model.getRenderableByName
 import io.github.sceneview.node.MeshNode
 
 class ModelRenderer(private val sceneView: ARSceneView, private val modelHolder: ModelHolder) {
-    private val faceNodes = mutableMapOf<AugmentedFace, AugmentedFaceNode>()
-
-    private fun onFaceTrackingStopped(face: AugmentedFace, node: AugmentedFaceNode) {
-        faceNodes.remove(face)
-        sceneView.removeChildNode(node)
-    }
+    private val faceNodes = mutableMapOf<AugmentedFace, Array<AugmentedFaceNode>>()
 
     fun render(faces: Array<AugmentedFace>) {
         if (faces.isEmpty()) {
@@ -37,25 +35,22 @@ class ModelRenderer(private val sceneView: ARSceneView, private val modelHolder:
         faces.forEach { face ->
             if (!faceNodes.containsKey(face) && face.meshVertices != null && face.meshVertices.limit() > 0) {
                 try {
-                    Log.d("ModelRenderer", "Creating face node with vertex count: ${face.meshVertices.limit() / 3}")
-                    Log.d("ModelRenderer", "Face mesh stats:" +
-                            "\nVertices: ${face.meshVertices?.limit() ?: -1}" +
-                            "\nIndices: ${face.meshTriangleIndices?.limit() ?: -1}" +
-                            "\nUV coords: ${face.meshTextureCoordinates?.limit() ?: -1}" +
-                            "\nNormals: ${face.meshNormals?.limit() ?: -1}")
+                    var nodes = arrayOf<AugmentedFaceNode>()
 
-                    Log.d("ModelRenderer", "MaterialInstances count: ${model.materialInstances.size}")
-                    for (i in 0 until model.materialInstances.size) {
-                        Log.d("ModelRenderer", "MaterialInstance $i: ${model.materialInstances[i].name}")
+                    for (i in 0 until model.instance.materialInstances.size) {
+                        val faceNode = AugmentedFaceNode(
+                            engine = sceneView.engine,
+                            augmentedFace = face,
+                            builder = {
+
+                            }
+                        )
+
+                        sceneView.addChildNode(faceNode)
+                        nodes += faceNode
                     }
 
-                    val faceNode = AugmentedFaceNode(
-                        engine = sceneView.engine,
-                        augmentedFace = face
-                    )
-
-                    sceneView.addChildNode(faceNode)
-                    faceNodes[face] = faceNode
+                    faceNodes[face] = nodes
 
                     Log.d("ModelRenderer", "Face node created successfully")
                 } catch (e: Exception) {
@@ -67,14 +62,16 @@ class ModelRenderer(private val sceneView: ARSceneView, private val modelHolder:
 
         faceNodes.forEach { (face, faceNode) ->
             if (face.trackingState == TrackingState.TRACKING) {
-                faceNode.update(face)
+                faceNode.forEach { node ->
+                    node.update(face)
+                }
             }
         }
 
         val trackedFaces = faces.filter { it.trackingState == TrackingState.TRACKING }.toSet()
         faceNodes.entries.removeAll { (face, node) ->
             if (!trackedFaces.contains(face)) {
-                sceneView.removeChildNode(node)
+                node.forEach { sceneView.removeChildNode(it) }
                 true
             } else {
                 false
@@ -84,7 +81,7 @@ class ModelRenderer(private val sceneView: ARSceneView, private val modelHolder:
 
     fun clear() {
         faceNodes.forEach { (_, faceNode) ->
-            sceneView.removeChildNode(faceNode)
+            faceNode.forEach { sceneView.removeChildNode(it) }
         }
         faceNodes.clear()
     }
