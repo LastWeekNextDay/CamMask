@@ -143,8 +143,6 @@ class MainActivity : AppCompatActivity(R.layout.arlayout) {
                         if (session != null) {
                             arWorker.update(session!!)
                             val faces = arWorker.getFaces()
-                            Log.d("MainActivity", "Found ${faces.size} faces, tracking states: ${
-                                faces.map { it.trackingState }}")
                             modelRenderer.render(faces)
                         }
                     }
@@ -201,11 +199,5 @@ class MainActivity : AppCompatActivity(R.layout.arlayout) {
         modelHolder = ModelHolder(sceneView)
         modelRenderer = ModelRenderer(sceneView, modelHolder)
         setup()
-
-        sceneView.session?.let { session ->
-            val config = session.config
-            config.augmentedFaceMode = Config.AugmentedFaceMode.MESH3D
-            session.configure(config)
-        }
     }
 }
