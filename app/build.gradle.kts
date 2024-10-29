@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "lt.lastweeknextday.cammask"
-        minSdk = 31
+        minSdk = 30
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

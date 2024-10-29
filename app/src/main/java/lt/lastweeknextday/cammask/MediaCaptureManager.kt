@@ -101,19 +101,36 @@ class MediaCaptureManager(
                 filename
             )
 
-            mediaRecorder = MediaRecorder(context).apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setVideoSource(MediaRecorder.VideoSource.SURFACE)
-                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                setOutputFile(videoFile?.absolutePath)
-                setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setVideoSize(arSceneView.width, arSceneView.height)
-                setVideoFrameRate(30)
-                setVideoEncodingBitRate(10000000)
-                setAudioEncodingBitRate(128000)
-                setAudioSamplingRate(44100)
-                prepare()
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                mediaRecorder = MediaRecorder(context).apply {
+                    setAudioSource(MediaRecorder.AudioSource.MIC)
+                    setVideoSource(MediaRecorder.VideoSource.SURFACE)
+                    setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                    setOutputFile(videoFile?.absolutePath)
+                    setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+                    setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                    setVideoSize(arSceneView.width, arSceneView.height)
+                    setVideoFrameRate(30)
+                    setVideoEncodingBitRate(10000000)
+                    setAudioEncodingBitRate(128000)
+                    setAudioSamplingRate(44100)
+                    prepare()
+                }
+            } else {
+                mediaRecorder = MediaRecorder().apply {
+                    setAudioSource(MediaRecorder.AudioSource.MIC)
+                    setVideoSource(MediaRecorder.VideoSource.SURFACE)
+                    setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                    setOutputFile(videoFile?.absolutePath)
+                    setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+                    setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                    setVideoSize(arSceneView.width, arSceneView.height)
+                    setVideoFrameRate(30)
+                    setVideoEncodingBitRate(10000000)
+                    setAudioEncodingBitRate(128000)
+                    setAudioSamplingRate(44100)
+                    prepare()
+                }
             }
 
             arSceneView.startMirroringToSurface(
