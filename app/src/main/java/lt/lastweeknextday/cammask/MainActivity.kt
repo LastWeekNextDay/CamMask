@@ -1,162 +1,215 @@
 package lt.lastweeknextday.cammask
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.ActivityManager
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Build.VERSION_CODES
+import android.media.MediaScannerConnection
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.view.View
+import android.widget.ImageButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
-import com.google.ar.core.ArCoreApk
+import androidx.lifecycle.lifecycleScope
 import com.google.ar.core.CameraConfig
 import com.google.ar.core.CameraConfigFilter
 import com.google.ar.core.Config
-import com.google.ar.core.Session
-import com.google.ar.core.exceptions.CameraNotAvailableException
-import com.google.ar.core.exceptions.UnavailableException
-import com.google.ar.core.exceptions.UnsupportedConfigurationException
-import com.google.ar.sceneform.ArSceneView
+import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.rendering.Renderable
+import com.google.ar.sceneform.ux.ArFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
+    private lateinit var arFragment: ArFragment
+    private lateinit var loadingDialog: LoadingDialog
+    private lateinit var modelHolder: ModelHolder
+    private lateinit var modelRenderer: ModelRenderer
     private lateinit var arWorker: ARWorker
-    private lateinit var session: Session
+    private lateinit var mediaCaptureManager: MediaCaptureManager
 
-    private lateinit var arFragment: CustomArFragment
-
-    private val cameraPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Log.e("MainActivity", "Camera permission not granted.")
-            finish()
-        }
-    }
+    private lateinit var flashOverlay: View
+    private lateinit var galleryManager: GalleryManager
+    private lateinit var galleryButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (!checkARCoreSupport()) {
-            finish()
-        }
-
-        if (!checkCameraPermission()) {
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-
-        if (!checkDeviceSupport(this)) {
-            finish()
-        }
-
-        val fragMan: FragmentManager = supportFragmentManager
-
         setContentView(R.layout.arlayout)
-        arFragment = fragMan.findFragmentById(R.id.arFragment) as CustomArFragment
 
-        arFragment.arSceneView.cameraStreamRenderPriority = Renderable.RENDER_PRIORITY_FIRST
+        loadingDialog = LoadingDialog(this)
+        galleryManager = GalleryManager(this)
 
-        session = Session(this)
-        initializeARCore(session)
+        if (savedInstanceState == null) {
+            if (Sceneform.isSupported(this)) {
+
+                checkAndRequestPermissions()
+                setupAR()
+                setupUI()
+            } else {
+                finish()
+            }
+        }
     }
 
-    private fun checkCameraPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun checkAndRequestPermissions() {
+        var permissions = arrayOf(
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.RECORD_AUDIO
+        )
 
-    @SuppressLint("ObsoleteSdkInt")
-    fun checkDeviceSupport(activity: Activity): Boolean {
-        if (Build.VERSION.SDK_INT < VERSION_CODES.N) {
-            Toast.makeText(activity, "Sceneform requires Android N or later", Toast.LENGTH_LONG)
-                .show()
-            return false
+        if (android.os.Build.VERSION.SDK_INT < 33) {
+            permissions += android.Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
-        val openGlVersionString =
-            (activity.getSystemService(ACTIVITY_SERVICE) as ActivityManager)
-                .deviceConfigurationInfo
-                .glEsVersion
-        if (openGlVersionString.toDouble() < 3.0) {
-            Toast.makeText(activity, "Sceneform requires OpenGL ES 3.0 or later", Toast.LENGTH_LONG)
-                .show()
-            return false
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            permissions += arrayOf(
+                android.Manifest.permission.READ_MEDIA_IMAGES,
+                android.Manifest.permission.READ_MEDIA_VIDEO,
+                android.Manifest.permission.READ_MEDIA_AUDIO
+            )
         }
-        return true
+
+        if (android.os.Build.VERSION.SDK_INT > 33) {
+            permissions += android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+        }
+
+        val notGrantedPermissions = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (notGrantedPermissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, notGrantedPermissions.toTypedArray(), 0)
+        }
     }
 
-    private fun checkARCoreSupport(): Boolean {
-        return when (ArCoreApk.getInstance().checkAvailability(this)) {
-            ArCoreApk.Availability.SUPPORTED_INSTALLED -> true
-            ArCoreApk.Availability.SUPPORTED_APK_TOO_OLD,
-            ArCoreApk.Availability.SUPPORTED_NOT_INSTALLED -> {
-                try {
-                    val installStatus = ArCoreApk.getInstance().requestInstall(this, true)
-                    installStatus == ArCoreApk.InstallStatus.INSTALLED
-                } catch (e: UnavailableException) {
-                    false
+    private fun setupAR() {
+        arFragment = (supportFragmentManager.findFragmentById(R.id.arFragment) as ArFragment).apply {
+            setOnSessionConfigurationListener{ session, config ->
+                val filter = CameraConfigFilter(session)
+                filter.setFacingDirection(CameraConfig.FacingDirection.FRONT)
+
+                session.setCameraConfig(session.getSupportedCameraConfigs(filter)[0])
+
+                config.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED)
+                config.setAugmentedFaceMode(Config.AugmentedFaceMode.MESH3D)
+                config.setLightEstimationMode(Config.LightEstimationMode.DISABLED)
+
+                session.configure(config)
+            }
+            setOnViewCreatedListener {
+                arSceneView.setCameraStreamRenderPriority(Renderable.RENDER_PRIORITY_FIRST)
+
+                modelHolder = ModelHolder(this@MainActivity)
+                modelRenderer = ModelRenderer(arSceneView)
+                arWorker = ARWorker(modelRenderer)
+                mediaCaptureManager = MediaCaptureManager(this@MainActivity, arSceneView)
+
+                arFragment.setOnAugmentedFaceUpdateListener(arWorker::onAugmentedFaceTrackingUpdate)
+
+                loadingDialog.show("Loading model...", transparentBackground = true)
+                modelHolder.loadModel("fox.glb") { success ->
+                    loadingDialog.hide()
+                    if (success) {
+                        modelRenderer.setModel(modelHolder.getModel())
+                    }
                 }
             }
-            else -> false
         }
     }
 
-    private fun initializeARCore(session: Session) {
-        try {
-            val modelHolder = ModelHolder()
-            arWorker = ARWorker(modelHolder)
+    private fun setupUI() {
+        flashOverlay = findViewById(R.id.flashOverlay)
 
-            val config = Config(session)
-            config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
-            config.augmentedFaceMode = Config.AugmentedFaceMode.MESH3D
-            config.lightEstimationMode = Config.LightEstimationMode.AMBIENT_INTENSITY
+        galleryButton = findViewById(R.id.galleryButton)
+        galleryButton.setOnClickListener {
+            galleryManager.openGallery(this)
+        }
 
-            val cameraConfigFilter = CameraConfigFilter(session)
-            cameraConfigFilter.setFacingDirection(CameraConfig.FacingDirection.FRONT)
-            val cameraConfigList = session.getSupportedCameraConfigs(cameraConfigFilter)
+        findViewById<ImageButton>(R.id.capturePhotoButton).setOnClickListener {
+            showCaptureAnimation()
+            mediaCaptureManager.capturePhoto { success ->
+                if (success) {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        refreshGalleryThumbnail()
+                    }, 500)
+                }
+            }
+        }
 
-            if (cameraConfigList.isNotEmpty()) {
-                session.cameraConfig = cameraConfigList[0]
-            } else {
-                throw UnsupportedConfigurationException("No supported camera config for front-facing camera.")
+        val videoButton = findViewById<ImageButton>(R.id.captureVideoButton)
+        videoButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECORD_AUDIO), 0)
+                return@setOnClickListener
             }
 
-            session.configure(config)
-            arWorker.setARSession(session)
-        } catch (e: UnavailableException) {
-            Log.e("MainActivity", "ARCore initialization failed: ${e.message}")
-            finish()
-        } catch (e: UnsupportedConfigurationException) {
-            Log.e("MainActivity", "ARCore configuration is unsupported: ${e.message}")
-            finish()
+            if (!mediaCaptureManager.isRecording()) {
+                if (mediaCaptureManager.startVideoRecording()) {
+                    videoButton.setBackgroundResource(R.drawable.video_button_recording)
+                }
+            } else {
+                mediaCaptureManager.stopVideoRecording()
+                videoButton.setBackgroundResource(R.drawable.video_button_background)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    refreshGalleryThumbnail()
+                }, 500)
+            }
+        }
+    }
+
+    private fun showCaptureAnimation() {
+        flashOverlay.apply {
+            animate().cancel()
+
+            bringToFront()
+
+            setBackgroundColor(android.graphics.Color.WHITE)
+            alpha = 0f
+            visibility = View.VISIBLE
+
+            animate()
+                .alpha(0.7f)
+                .setDuration(50)
+                .withEndAction {
+                    animate()
+                        .alpha(0f)
+                        .setDuration(50)
+                        .withEndAction {
+                            visibility = View.INVISIBLE
+                        }
+                }
+                .start()
+        }
+    }
+
+    private fun refreshGalleryThumbnail() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            MediaScannerConnection.scanFile(
+                applicationContext,
+                arrayOf(Environment.getExternalStorageDirectory().toString()),
+                null
+            ) { _, _ ->
+                lifecycleScope.launch(Dispatchers.Main) {
+                    galleryManager.updateGalleryButtonThumbnail(galleryButton)
+                }
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        arWorker.resumeARSession()
-        arFragment.onResume()
-        arFragment.arSceneView.resume()
-    }
 
-    override fun onPause() {
-        super.onPause()
-        arWorker.pauseARSession()
-        arFragment.onPause()
-        arFragment.arSceneView.pause()
+        Handler(Looper.getMainLooper()).postDelayed({
+            refreshGalleryThumbnail()
+        }, 500)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        arWorker.closeARSession()
-        arFragment.arSceneView.destroy()
-        arFragment.onDestroy()
+        modelHolder.cleanup()
+        modelRenderer.cleanup()
+        mediaCaptureManager.cleanup()
+        galleryManager.cleanup()
     }
 }

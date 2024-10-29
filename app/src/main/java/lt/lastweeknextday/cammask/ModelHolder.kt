@@ -1,20 +1,40 @@
 package lt.lastweeknextday.cammask
 
-import com.google.ar.core.AugmentedFace
-import com.google.ar.core.Pose
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
+import android.content.Context
+import android.net.Uri
+import android.widget.Toast
+import com.google.ar.sceneform.rendering.ModelRenderable
+import java.util.concurrent.CompletableFuture
 
-class ModelHolder {
-    data class FaceData(val uvs: FloatBuffer, val indices: ShortBuffer, val facePose: Pose, val meshVertices: FloatBuffer, val meshNormals: FloatBuffer)
+class ModelHolder(private val context: Context) {
+    private val loaders = mutableSetOf<CompletableFuture<*>>()
+    private var currentModel: ModelRenderable? = null
 
-    val facesData: MutableMap<AugmentedFace, FaceData> = mutableMapOf()
+    fun getModel(): ModelRenderable? = currentModel
 
-    fun updateFaceData(face: AugmentedFace, uvs: FloatBuffer, indices: ShortBuffer, facePose: Pose, meshVertices: FloatBuffer, meshNormals: FloatBuffer) {
-        facesData[face] = FaceData(uvs, indices, facePose, meshVertices, meshNormals)
+    fun loadModel(modelPath: String, callback: (Boolean) -> Unit) {
+        ModelRenderable.builder()
+            .setSource(context, Uri.parse(modelPath))
+            .setIsFilamentGltf(true)
+            .build()
+            .thenAccept { model ->
+                currentModel = model
+                callback(true)
+            }
+            .exceptionally { throwable ->
+                Toast.makeText(context, "Unable to load model: ${throwable.message}",
+                    Toast.LENGTH_LONG).show()
+                callback(false)
+                null
+            }.also { loaders.add(it) }
     }
 
-    fun removeFaceData(face: AugmentedFace) {
-        facesData.remove(face)
+    fun cleanup() {
+        loaders.forEach { loader ->
+            if (!loader.isDone) {
+                loader.cancel(true)
+            }
+        }
+        currentModel = null
     }
 }

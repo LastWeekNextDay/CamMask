@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CamMask</string>
+    <string name="loading">Loading…</string>
+    <string name="photo_button_text">Take Photo</string>
+    <string name="video_button_text">Record Video</string>
+    <string name="gallery_button_text">Open Gallery</string>
 </resources>
