@@ -1,17 +1,25 @@
 package lt.lastweeknextday.cammask
 
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.ar.core.CameraConfig
 import com.google.ar.core.CameraConfigFilter
 import com.google.ar.core.Config
@@ -32,6 +40,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var flashOverlay: View
     private lateinit var galleryManager: GalleryManager
     private lateinit var galleryButton: ImageButton
+
+    private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                handleModelFile(uri)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -154,6 +170,39 @@ class MainActivity : AppCompatActivity() {
                 Handler(Looper.getMainLooper()).postDelayed({
                     refreshGalleryThumbnail()
                 }, 500)
+            }
+        }
+
+        findViewById<RecyclerView>(R.id.maskList).apply {
+            layoutManager = GridLayoutManager(this@MainActivity, 2)
+            // TODO: Mask list
+        }
+
+        findViewById<Button>(R.id.uploadButton).setOnClickListener {
+            // TODO: Upload func
+            Toast.makeText(this, "Upload functionality coming soon", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<Button>(R.id.filterButton).setOnClickListener {
+            // TODO: Filter func
+            Toast.makeText(this, "Filter functionality coming soon", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<Button>(R.id.testButton).setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "*/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
+            }
+            filePickerLauncher.launch(intent)
+        }
+    }
+
+    private fun handleModelFile(uri: Uri) {
+        loadingDialog.show("Loading model...", transparentBackground = true)
+        modelHolder.loadModel(uri.toString()) { success ->
+            loadingDialog.hide()
+            if (success) {
+                modelRenderer.setModel(modelHolder.getModel())
             }
         }
     }

@@ -10,7 +10,8 @@
             android:id="@+id/arFragment"
             android:name="com.google.ar.sceneform.ux.ArFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            tools:layout="@layout/arlayout" />
 
     <View
             android:id="@+id/flashOverlay"
@@ -18,7 +19,15 @@
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:visibility="invisible"
-            android:elevation="999dp"/>
+            android:elevation="999dp" />
+
+
+    <!-- Slide Menu -->
+    <lt.lastweeknextday.cammask.SlideMenuLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <include layout="@layout/slide_menu"/>
+    </lt.lastweeknextday.cammask.SlideMenuLayout>
 
     <RelativeLayout
             android:id="@+id/controlsLayout"
