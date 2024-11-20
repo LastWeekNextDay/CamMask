@@ -52,8 +52,8 @@
         <!-- Record Video Button -->
         <ImageButton
                 android:id="@+id/captureVideoButton"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="32dp"
                 android:layout_toEndOf="@id/capturePhotoButton"
