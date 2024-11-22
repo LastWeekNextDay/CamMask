@@ -44,7 +44,11 @@ class MainActivity : AppCompatActivity() {
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
-                handleModelFile(uri)
+                if (uri.toString().endsWith(".fbx", ignoreCase = true)) {
+                    handleModelFile(uri)
+                } else {
+                    Toast.makeText(this, "Please select an FBX file", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
