@@ -1,5 +1,5 @@
 [versions]
-agp = "8.5.2"
+agp = "8.7.2"
 arsceneview = "2.2.1"
 core = "1.45.0"
 coreVersion = "1.17.1"
