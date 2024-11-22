@@ -27,6 +27,7 @@ import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -252,9 +253,16 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        if (!::galleryButton.isInitialized) {
+            lifecycleScope.launch {
+                while (!::galleryButton.isInitialized) {
+                    delay(100)
+                }
+                refreshGalleryThumbnail()
+            }
+        } else {
             refreshGalleryThumbnail()
-        }, 500)
+        }
     }
 
     override fun onDestroy() {
