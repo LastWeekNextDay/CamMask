@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -13,17 +14,24 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.SignInButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 
 class UploadActivity : AppCompatActivity() {
+    private lateinit var googleSignInManager: GoogleSignInManager
+
     private val tags = mutableListOf<String>()
+
     private val selectedImages = mutableListOf<Uri>()
     private var primaryImagePosition = 0
     private lateinit var imageAdapter: ImageSelectionAdapter
     private var selectedModel: Uri? = null
+
+    private lateinit var uploadButton: Button
+    private lateinit var loginButton: SignInButton
 
     private val imagesPicker = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         uris?.let {
@@ -48,6 +56,8 @@ class UploadActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
 
+        googleSignInManager = GoogleSignInManager(this)
+
         setupImageRecyclerView()
 
         findViewById<Button>(R.id.selectImagesButton).setOnClickListener {
@@ -62,9 +72,29 @@ class UploadActivity : AppCompatActivity() {
             showAddTagDialog()
         }
 
-        findViewById<Button>(R.id.uploadButton).setOnClickListener {
+        uploadButton = findViewById(R.id.uploadButton)
+        uploadButton.setOnClickListener {
             handleUpload()
         }
+
+        loginButton = findViewById(R.id.loginButton)
+        loginButton.setOnClickListener {
+            googleSignInManager.initiateSignIn()
+        }
+
+        updateButtonVisibility(GoogleAuthManager.isLoggedIn.value == true)
+        observeAuthState()
+    }
+
+    private fun observeAuthState() {
+        GoogleAuthManager.isLoggedIn.observe(this) { isLoggedIn ->
+            updateButtonVisibility(isLoggedIn)
+        }
+    }
+
+    private fun updateButtonVisibility(isLoggedIn: Boolean) {
+        uploadButton.visibility = if (isLoggedIn) View.VISIBLE else View.GONE
+        loginButton.visibility = if (isLoggedIn) View.GONE else View.VISIBLE
     }
 
     private fun setupImageRecyclerView() {
