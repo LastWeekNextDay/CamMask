@@ -3,7 +3,9 @@ agp = "8.7.2"
 arsceneview = "2.2.1"
 core = "1.45.0"
 coreVersion = "1.17.1"
+credentials = "<latest version>"
 googleCore = "1.31.0"
+googleid = "<latest version>"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -13,6 +15,7 @@ lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
 composeBom = "2024.04.01"
 constraintlayout = "2.1.4"
+playServicesAuth = "21.2.0"
 sceneformUx = "1.17.1"
 sceneformUxVersion = "1.17.1"
 sceneview = "2.2.1"
@@ -25,9 +28,12 @@ material = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
 core = { module = "com.google.ar:core", version.ref = "core" }
 core-v1310 = { module = "com.google.ar:core", version.ref = "googleCore" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -42,6 +48,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 sceneform-core = { module = "com.google.ar.sceneform:core", version.ref = "coreVersion" }
 sceneform-ux = { module = "com.google.ar.sceneform:sceneform-ux", version.ref = "sceneformUx" }
 sceneview = { module = "io.github.sceneview:sceneview", version.ref = "sceneview" }
