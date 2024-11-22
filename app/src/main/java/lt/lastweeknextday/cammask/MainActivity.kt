@@ -179,8 +179,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.uploadButton).setOnClickListener {
-            // TODO: Upload func
-            Toast.makeText(this, "Upload functionality coming soon", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, UploadActivity::class.java))
         }
 
         findViewById<Button>(R.id.filterButton).setOnClickListener {
