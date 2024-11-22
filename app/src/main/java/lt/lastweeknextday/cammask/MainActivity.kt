@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<RecyclerView>(R.id.maskList).apply {
             layoutManager = GridLayoutManager(this@MainActivity, 2)
-            // TODO: Mask list
+            findViewById<RecyclerView>(R.id.maskList).adapter = MaskListAdapter()
         }
 
         findViewById<Button>(R.id.uploadButton).setOnClickListener {
