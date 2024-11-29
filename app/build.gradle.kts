@@ -72,7 +72,9 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.gorisse.thomas.sceneform:sceneform:1.23.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.coroutines.android)
 }

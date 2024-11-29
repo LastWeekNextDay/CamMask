@@ -26,6 +26,7 @@ import com.google.ar.core.Config
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -184,7 +185,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.uploadButton).setOnClickListener {
-            startActivity(Intent(this, UploadActivity::class.java))
+            CoroutineScope(Dispatchers.Main).launch {
+                if (GoogleAuthManager.checkIfLoggedIn() && !GoogleAuthManager.checkIfCanUpload()) {
+                    Toast.makeText(this@MainActivity, "You are banned from uploading", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+                startActivity(Intent(this@MainActivity, UploadActivity::class.java))
+            }
+
         }
 
         findViewById<Button>(R.id.filterButton).setOnClickListener {

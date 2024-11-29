@@ -4,6 +4,7 @@ arsceneview = "2.2.1"
 core = "1.45.0"
 coreVersion = "1.17.1"
 credentials = "<latest version>"
+firebaseBom = "33.6.0"
 googleCore = "1.31.0"
 googleid = "<latest version>"
 kotlin = "1.9.0"
@@ -11,10 +12,12 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinxCoroutinesAndroid = "1.7.3"
 lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
 composeBom = "2024.04.01"
 constraintlayout = "2.1.4"
+okhttp = "4.12.0"
 playServicesAuth = "21.2.0"
 sceneformUx = "1.17.1"
 sceneformUxVersion = "1.17.1"
@@ -33,6 +36,9 @@ androidx-credentials-play-services-auth = { module = "androidx.credentials:crede
 arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
 core = { module = "com.google.ar:core", version.ref = "core" }
 core-v1310 = { module = "com.google.ar:core", version.ref = "googleCore" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -48,6 +54,8 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 sceneform-core = { module = "com.google.ar.sceneform:core", version.ref = "coreVersion" }
 sceneform-ux = { module = "com.google.ar.sceneform:sceneform-ux", version.ref = "sceneformUx" }

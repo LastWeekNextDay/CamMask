@@ -9,24 +9,29 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class GoogleSignInManager(private val activity: AppCompatActivity) {
     private val activityResultLauncher: ActivityResultLauncher<Intent> = activity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        try {
-            Log.d("GoogleSignInManager", "Sign in result: ${result.data}")
-            if (result.resultCode != AppCompatActivity.RESULT_OK) {
-                Log.d("GoogleSignInManager", "Sign in failed with result code: ${result.resultCode}")
-                GoogleAuthManager.logout()
-                return@registerForActivityResult
-            }
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                if (result.resultCode != AppCompatActivity.RESULT_OK) {
+                    Log.d("GoogleSignInManager", "Sign in failed with result code: ${result.resultCode}")
+                    GoogleAuthManager.logout()
+                    return@launch
+                }
 
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            handleSignInTask(task.result)
-        } catch (e: Exception) {
-            Log.e("GoogleSignInManager", "Sign in failed", e)
-            GoogleAuthManager.logout()
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                handleSignInTask(task.result)
+            } catch (e: Exception) {
+                Log.e("GoogleSignInManager", "Sign in failed", e)
+                GoogleAuthManager.logout()
+            }
         }
     }
 
@@ -43,25 +48,27 @@ class GoogleSignInManager(private val activity: AppCompatActivity) {
     }
 
     fun initiateSignIn() {
-        Log.d("GoogleSignInManager", "initiateSignIn: Initiating sign in")
-        val account = GoogleSignIn.getLastSignedInAccount(activity.applicationContext)
-        if (account != null) {
-            handleSignInTask(account)
-            return
-        }
+        CoroutineScope(Dispatchers.Main).launch {
+            Log.d("GoogleSignInManager", "initiateSignIn: Initiating sign in")
+            val account = GoogleSignIn.getLastSignedInAccount(activity.applicationContext)
+            if (account != null) {
+                handleSignInTask(account)
+                return@launch
+            }
 
-        activityResultLauncher.launch(googleSignInClient.signInIntent)
+            activityResultLauncher.launch(googleSignInClient.signInIntent)
+        }
     }
 
-    private fun handleSignInTask(account: GoogleSignInAccount) {
+    private suspend fun handleSignInTask(account: GoogleSignInAccount) = withContext(Dispatchers.Main) {
         Log.d("GoogleSignInManager", "handleSignInTask: Account ID: ${account.id}")
         if (account.id == null) {
             Log.d("GoogleSignInManager", "handleSignInTask: Account ID is null")
             GoogleAuthManager.logout()
-            return
+            return@withContext
         }
 
-        GoogleAuthManager.setLoggedIn(account)
+        GoogleAuthManager.doLogin(account)
     }
 
     fun signOut() {
