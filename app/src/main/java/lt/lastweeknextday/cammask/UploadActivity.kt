@@ -24,14 +24,19 @@ import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.Locale
 
 class UploadActivity : BaseActivity() {
+    private val fileAnalyzer = FileAnalyzer()
     private val tags = mutableListOf<String>()
 
     private val selectedImages = mutableListOf<Uri>()
     private var primaryImagePosition = 0
     private lateinit var imageAdapter: ImageSelectionAdapter
+
     private var selectedModel: Uri? = null
+    private var modelFullName: String = ""
 
     private lateinit var uploadButton: Button
     private lateinit var loginButton: SignInButton
@@ -48,11 +53,15 @@ class UploadActivity : BaseActivity() {
 
     private val modelPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
-            if (it.toString().endsWith(".fbx", ignoreCase = true)) {
+            Log.d("UploadActivity", "Selected model uri: $it")
+            val fileInfo = fileAnalyzer.analyze(this, it)
+            Log.d("UploadActivity", "Selected file: $fileInfo")
+            if (fileInfo.extension == "glb") {
                 selectedModel = it
+                modelFullName = fileInfo.name
                 updateModelPreview()
             } else {
-                showError("Please select an FBX file")
+                showError("Please select a GLB file")
             }
         }
     }

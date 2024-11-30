@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -30,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MainActivity : BaseActivity() {
     private lateinit var arFragment: ArFragment
@@ -43,13 +45,18 @@ class MainActivity : BaseActivity() {
     private lateinit var galleryManager: GalleryManager
     private lateinit var galleryButton: ImageButton
 
+    private lateinit var fileAnalyzer: FileAnalyzer
+
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
-                if (uri.toString().endsWith(".fbx", ignoreCase = true)) {
+                Log.d("MainActivity", "Selected file: $uri")
+                val fileInfo = fileAnalyzer.analyze(applicationContext, uri)
+                Log.d("MainActivity", "File info: $fileInfo")
+                if (fileInfo.extension == "glb") {
                     handleModelFile(uri)
                 } else {
-                    Toast.makeText(this, "Please select an FBX file", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Please select a GLB file", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -61,6 +68,7 @@ class MainActivity : BaseActivity() {
 
         loadingDialog = LoadingDialog(this)
         galleryManager = GalleryManager(this)
+        fileAnalyzer = FileAnalyzer()
 
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
@@ -129,6 +137,7 @@ class MainActivity : BaseActivity() {
 
                 arFragment.setOnAugmentedFaceUpdateListener(arWorker::onAugmentedFaceTrackingUpdate)
 
+                /*
                 loadingDialog.show("Loading model...", transparentBackground = true)
                 modelHolder.loadModel("fox.glb") { success ->
                     loadingDialog.hide()
@@ -136,6 +145,7 @@ class MainActivity : BaseActivity() {
                         modelRenderer.setModel(modelHolder.getModel())
                     }
                 }
+                */
             }
         }
     }

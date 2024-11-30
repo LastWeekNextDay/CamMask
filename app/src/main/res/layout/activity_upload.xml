@@ -48,7 +48,7 @@
                 android:id="@+id/selectModelButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Select Model (FBX)"
+                android:text="Select Model (GLB)"
                 android:layout_marginBottom="8dp" />
 
         <TextView
