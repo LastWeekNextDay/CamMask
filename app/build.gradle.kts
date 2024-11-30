@@ -77,4 +77,5 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.glide)
 }

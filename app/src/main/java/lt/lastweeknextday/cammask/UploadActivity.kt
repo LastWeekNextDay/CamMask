@@ -24,9 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class UploadActivity : AppCompatActivity() {
-    private lateinit var googleSignInManager: GoogleSignInManager
-
+class UploadActivity : BaseActivity() {
     private val tags = mutableListOf<String>()
 
     private val selectedImages = mutableListOf<Uri>()
@@ -59,8 +57,6 @@ class UploadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
-
-        googleSignInManager = GoogleSignInManager(this)
 
         setupImageRecyclerView()
 

@@ -5,6 +5,7 @@ core = "1.45.0"
 coreVersion = "1.17.1"
 credentials = "<latest version>"
 firebaseBom = "33.6.0"
+glide = "4.16.0"
 googleCore = "1.31.0"
 googleid = "<latest version>"
 kotlin = "1.9.0"
@@ -39,6 +40,7 @@ core-v1310 = { module = "com.google.ar:core", version.ref = "googleCore" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
