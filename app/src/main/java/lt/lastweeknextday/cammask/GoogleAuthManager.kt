@@ -14,6 +14,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 data class UserData(
     val id: String,
+    val name: String,
+    val photoUrl: String,
     val canComment: Boolean,
     val canUpload: Boolean,
     val creationDate: String,
@@ -37,12 +39,15 @@ object GoogleAuthManager {
 
     suspend fun doLogin(acc: GoogleSignInAccount) {
         Log.d("GoogleAuthManager", "setLoggedIn: Account ID: ${acc.id}")
+        val id = acc.id ?: throw Exception("Google ID is null")
+        val name = acc.displayName ?: throw Exception("Display name is null")
+        val photoUrl = acc.photoUrl?.toString() ?: ""
 
         try {
-            var user = fetchUserData(acc.id!!)
+            var user = fetchUserData(id)
             if (user == null) {
-                createUser(acc.id!!)
-                user = fetchUserData(acc.id!!)
+                createUser(id, name, photoUrl)
+                user = fetchUserData(id)
                 if (user == null) {
                     throw Exception("Failed to create and fetch user")
                 }
@@ -62,8 +67,11 @@ object GoogleAuthManager {
         _isLoggedIn.value = true
     }
 
-    private suspend fun createUser(googleId: String) = withContext(Dispatchers.IO) {
-        val json = JSONObject().put("googleId", googleId)
+    private suspend fun createUser(googleId: String, displayName: String, photoUrl: String) = withContext(Dispatchers.IO) {
+        var json = JSONObject().put("googleId", googleId)
+        json = json.put("name", displayName)
+        json.put("photoUrl", photoUrl)
+
         val body = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
@@ -98,6 +106,8 @@ object GoogleAuthManager {
     private fun parseUserData(json: JSONObject): UserData {
         return UserData(
             id = json.getString("id"),
+            name = json.getString("name"),
+            photoUrl = json.getString("photoUrl"),
             canComment = json.getBoolean("canComment"),
             canUpload = json.getBoolean("canUpload"),
             creationDate = json.getString("creationDate"),
