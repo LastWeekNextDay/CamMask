@@ -184,13 +184,23 @@ class UploadActivity : BaseActivity() {
     }
 
     private fun updateImagesPreview() {
+        val imagesText = findViewById<TextView>(R.id.selectedImagesText)
         imageAdapter.updateImages(selectedImages)
+        if (selectedImages.isNotEmpty()) {
+            imagesText.text = "Selected images: ${selectedImages.size}"
+        } else {
+            imagesText.text = "No images selected"
+        }
     }
 
     private fun updateModelPreview() {
         Log.d("UploadActivity", "updateModelPreview called")
         val modelText = findViewById<TextView>(R.id.selectedModelText)
-        modelText.text = selectedModel?.lastPathSegment ?: "No model selected"
+        if (selectedModel != null) {
+            modelText.text = modelFullName
+        } else {
+            modelText.text = "No model selected"
+        }
     }
 
     private fun handleUpload() {
