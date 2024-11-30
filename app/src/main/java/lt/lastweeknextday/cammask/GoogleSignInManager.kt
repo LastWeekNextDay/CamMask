@@ -48,16 +48,8 @@ class GoogleSignInManager(private val activity: AppCompatActivity) {
     }
 
     fun initiateSignIn() {
-        CoroutineScope(Dispatchers.Main).launch {
-            Log.d("GoogleSignInManager", "initiateSignIn: Initiating sign in")
-            val account = GoogleSignIn.getLastSignedInAccount(activity.applicationContext)
-            if (account != null) {
-                handleSignInTask(account)
-                return@launch
-            }
-
-            activityResultLauncher.launch(googleSignInClient.signInIntent)
-        }
+        Log.d("GoogleSignInManager", "initiateSignIn: Initiating sign in")
+        activityResultLauncher.launch(googleSignInClient.signInIntent)
     }
 
     private suspend fun handleSignInTask(account: GoogleSignInAccount) = withContext(Dispatchers.Main) {
