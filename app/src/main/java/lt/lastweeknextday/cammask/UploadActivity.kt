@@ -23,12 +23,24 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.internal.wait
+import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.util.Locale
 
 class UploadActivity : BaseActivity() {
+    private val uploadManager = UploadManager(this)
     private val fileAnalyzer = FileAnalyzer()
+    private val client = OkHttpClient()
+
     private val tags = mutableListOf<String>()
 
     private val selectedImages = mutableListOf<Uri>()
@@ -95,6 +107,7 @@ class UploadActivity : BaseActivity() {
                     Toast.makeText(this@UploadActivity, "You are banned from uploading", Toast.LENGTH_LONG).show()
                     return@launch
                 } else {
+
                     handleUpload()
                 }
             }
@@ -203,7 +216,7 @@ class UploadActivity : BaseActivity() {
         }
     }
 
-    private fun handleUpload() {
+    private suspend fun handleUpload() {
         Log.d("UploadActivity", "handleUpload called")
         val name = findViewById<TextInputLayout>(R.id.maskNameInput).editText?.text.toString()
         val description = findViewById<TextInputLayout>(R.id.descriptionInput).editText?.text.toString()
@@ -227,9 +240,75 @@ class UploadActivity : BaseActivity() {
             return
         }
 
-        // TODO: Upload func
-        setResult(Activity.RESULT_OK)
-        finish()
+        try {
+            var modelUrl = ""
+            var imagesUrls = emptyList<String>()
+            try {
+                CoroutineScope(Dispatchers.IO).async {
+                    modelUrl = uploadManager.uploadFile(selectedModel!!)
+                    imagesUrls = selectedImages.map { uploadManager.uploadFile(it) }
+                }.await()
+            } catch (e: Exception) {
+                Log.e("UploadActivity", "Error during file upload", e)
+                showError("Failed to upload files: ${e.message}")
+            }
+
+            if (modelUrl.isBlank() || imagesUrls.isEmpty()) {
+                showError("Failed to upload files")
+                return
+            }
+
+            val googleId = GoogleAuthManager.getGoogleAccount()?.id ?: run {
+                showError("Please sign in to upload")
+                return
+            }
+
+            val maskData = JSONObject().apply {
+                put("maskUrl", modelUrl)
+                put("name", name)
+                put("description", description)
+                put("images", imagesUrls)
+                put("tags", tags)
+                put("uploaderGoogleId", googleId)
+            }
+
+            var success = false
+
+            CoroutineScope(Dispatchers.IO).async {
+                val request = Request.Builder()
+                    .url("https://createmask-${Constants.BASE_URL}")
+                    .post(
+                        maskData.toString()
+                            .toRequestBody("application/json".toMediaType())
+                    )
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException("Failed to create mask: ${response.code}")
+                    }
+
+                    val result = JSONObject(response.body!!.string())
+                    if (result.getBoolean("success")) {
+                        success = true
+                    }
+
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+            }.await()
+
+            if (!success) {
+                showError("Failed to upload mask")
+            } else {
+                Toast.makeText(this, "Mask uploaded successfully", Toast.LENGTH_SHORT).show()
+                setResult(Activity.RESULT_OK)
+                finish()
+            }
+        } catch (e: Exception) {
+            Log.e("UploadActivity", "Error during upload", e)
+            showError("Failed to upload mask: ${e.message}")
+        }
     }
 
     private fun showError(message: String) {
