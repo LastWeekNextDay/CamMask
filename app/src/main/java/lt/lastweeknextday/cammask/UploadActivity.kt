@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +35,8 @@ class UploadActivity : BaseActivity() {
 
     private lateinit var uploadButton: Button
     private lateinit var loginButton: SignInButton
+    private lateinit var loginProgress: ProgressBar
+    private var isLoggingInOut = false
 
     private val imagesPicker = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         uris?.let {
@@ -59,7 +62,11 @@ class UploadActivity : BaseActivity() {
         setContentView(R.layout.activity_upload)
 
         setupImageRecyclerView()
+        setupViews()
+        observeAuthState()
+    }
 
+    private fun setupViews() {
         findViewById<Button>(R.id.selectImagesButton).setOnClickListener {
             imagesPicker.launch("image/*")
         }
@@ -85,16 +92,30 @@ class UploadActivity : BaseActivity() {
         }
 
         loginButton = findViewById(R.id.loginButton)
-        loginButton.setOnClickListener {
-            googleSignInManager.initiateSignIn()
-        }
+        loginProgress = findViewById(R.id.loginProgress)
 
-        updateButtonVisibility(GoogleAuthManager.isLoggedIn.value == true)
-        observeAuthState()
+        loginButton.setOnClickListener {
+            if (!isLoggingInOut) {
+                setLoginLoadingState(true)
+                googleSignInManager.initiateSignIn()
+            }
+        }
+    }
+
+    private fun setLoginLoadingState(loading: Boolean) {
+        isLoggingInOut = loading
+        if (loading) {
+            loginButton.visibility = View.INVISIBLE
+            loginProgress.visibility = View.VISIBLE
+        } else {
+            loginButton.visibility = View.VISIBLE
+            loginProgress.visibility = View.GONE
+        }
     }
 
     private fun observeAuthState() {
         GoogleAuthManager.isLoggedIn.observe(this) { isLoggedIn ->
+            setLoginLoadingState(false)
             updateButtonVisibility(isLoggedIn)
         }
     }
@@ -102,6 +123,7 @@ class UploadActivity : BaseActivity() {
     private fun updateButtonVisibility(isLoggedIn: Boolean) {
         uploadButton.visibility = if (isLoggedIn) View.VISIBLE else View.GONE
         loginButton.visibility = if (isLoggedIn) View.GONE else View.VISIBLE
+        loginProgress.visibility = View.GONE
     }
 
     private fun setupImageRecyclerView() {

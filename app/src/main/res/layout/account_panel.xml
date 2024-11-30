@@ -54,11 +54,24 @@
                 android:layout_gravity="center"
                 android:textSize="14sp"/>
 
-        <com.google.android.gms.common.SignInButton
-                android:id="@+id/signInButton"
+        <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="16dp">
+
+            <com.google.android.gms.common.SignInButton
+                    android:id="@+id/signInButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <ProgressBar
+                    android:id="@+id/signInProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"/>
+
+        </FrameLayout>
 
         <Button
                 android:id="@+id/signOutButton"

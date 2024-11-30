@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import com.bumptech.glide.Glide
@@ -34,11 +35,13 @@ class AccountPanel @JvmOverloads constructor(
     private lateinit var userEmail: TextView
     private lateinit var signInButton: SignInButton
     private lateinit var signOutButton: Button
+    private lateinit var signInProgress: ProgressBar
 
     private var initialX = 0f
     private var initialTranslationX = 0f
     private var isPanelOpen = false
     private var isDragging = false
+    private var isLoggingInOut = false
 
     init {
         LayoutInflater.from(context).inflate(R.layout.account_panel, this, true)
@@ -55,18 +58,37 @@ class AccountPanel @JvmOverloads constructor(
         userEmail = findViewById(R.id.userEmail)
         signInButton = findViewById(R.id.signInButton)
         signOutButton = findViewById(R.id.signOutButton)
+        signInProgress = findViewById(R.id.signInProgress)
 
         signInButton.setOnClickListener {
-            (context as? BaseActivity)?.googleSignInManager?.initiateSignIn()
+            if (!isLoggingInOut) {
+                setLoginLoadingState(true)
+                (context as? BaseActivity)?.googleSignInManager?.initiateSignIn()
+            }
         }
 
         signOutButton.setOnClickListener {
-            (context as? BaseActivity)?.googleSignInManager?.signOut()
+            if (!isLoggingInOut) {
+                setLoginLoadingState(true)
+                (context as? BaseActivity)?.googleSignInManager?.signOut()
+            }
+        }
+    }
+
+    private fun setLoginLoadingState(loading: Boolean) {
+        isLoggingInOut = loading
+        if (loading) {
+            signInButton.visibility = View.INVISIBLE
+            signOutButton.visibility = View.INVISIBLE
+            signInProgress.visibility = View.VISIBLE
+        } else {
+            signInProgress.visibility = View.GONE
         }
     }
 
     private fun setupObservers() {
         GoogleAuthManager.isLoggedIn.observe(context as LifecycleOwner) { isLoggedIn ->
+            setLoginLoadingState(false)
             signInButton.visibility = if (isLoggedIn) View.GONE else View.VISIBLE
             signOutButton.visibility = if (isLoggedIn) View.VISIBLE else View.GONE
 
