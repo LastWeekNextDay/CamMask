@@ -30,7 +30,6 @@ object GoogleAuthManager {
 
     private var googleAccount: GoogleSignInAccount? = null
     private val client = OkHttpClient()
-    private const val BASE_URL = "rea7kx4wdq-uc.a.run.app"
 
     init {
         _isLoggedIn.value = false
@@ -75,7 +74,7 @@ object GoogleAuthManager {
         val body = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("https://createuser-$BASE_URL")
+            .url("https://createuser-${Constants.BASE_URL}")
             .post(body)
             .build()
 
@@ -84,7 +83,7 @@ object GoogleAuthManager {
 
     private suspend fun fetchUserData(googleId: String) = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url("https://getuser-$BASE_URL/?googleId=$googleId")
+            .url("https://getuser-${Constants.BASE_URL}/?googleId=$googleId")
             .get()
             .build()
 
