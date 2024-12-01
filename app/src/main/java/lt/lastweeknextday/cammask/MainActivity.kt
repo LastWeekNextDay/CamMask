@@ -47,6 +47,9 @@ class MainActivity : BaseActivity() {
 
     private lateinit var fileAnalyzer: FileAnalyzer
 
+    private lateinit var maskListAdapter: MaskListAdapter
+    private lateinit var maskLoader: MaskLoader
+
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
@@ -189,10 +192,32 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        maskLoader = MaskLoader()
+        maskListAdapter = MaskListAdapter()
+
         findViewById<RecyclerView>(R.id.maskList).apply {
             layoutManager = GridLayoutManager(this@MainActivity, 2)
-            findViewById<RecyclerView>(R.id.maskList).adapter = MaskListAdapter()
+            adapter = maskListAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
+
+                    if (!maskListAdapter.isLoading() && maskListAdapter.hasMore()) {
+                        if ((visibleItemCount + firstVisibleItem) >= totalItemCount - 4) {
+                            loadMoreMasks()
+                        }
+                    }
+                }
+            })
         }
+
+        loadMoreMasks()
 
         findViewById<Button>(R.id.uploadButton).setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
@@ -251,6 +276,24 @@ class MainActivity : BaseActivity() {
                         }
                 }
                 .start()
+        }
+    }
+
+    private fun loadMoreMasks() {
+        lifecycleScope.launch {
+            try {
+                maskListAdapter.loadMore()
+                val (newMasks, lastId) = maskLoader.loadMasks(
+                    limit = 6,
+                    lastId = maskListAdapter.getLastId()?.let { Integer.parseInt(it) },
+                    orderBy = "ratingsCount",
+                    orderDirection = "desc"
+                )
+                maskListAdapter.addMasks(newMasks, lastId)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error loading masks", e)
+                Toast.makeText(this@MainActivity, "Error loading masks", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
