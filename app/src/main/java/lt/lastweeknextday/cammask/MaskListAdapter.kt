@@ -1,23 +1,25 @@
 package lt.lastweeknextday.cammask
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import org.json.JSONArray
 import org.json.JSONObject
 
-class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val masksList = mutableListOf<JSONObject>()
     private val loadedIds = mutableSetOf<Int>()
     private var isLoading = false
     private var lastId: String? = null
     private var lastSnapshot: String? = null
     private var hasMoreItems = true
+    private var selectedMaskId: Int? = null
 
     companion object {
         private const val VIEW_TYPE_ITEM = 0
@@ -28,6 +30,7 @@ class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val maskImage: ImageView = itemView.findViewById(R.id.maskImage)
         private val maskName: TextView = itemView.findViewById(R.id.maskName)
         private val ratingText: TextView = itemView.findViewById(R.id.ratingText)
+        private val cardView: CardView = itemView as CardView
         private val starViews = listOf<ImageView>(
             itemView.findViewById(R.id.star1),
             itemView.findViewById(R.id.star2),
@@ -35,7 +38,9 @@ class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemView.findViewById(R.id.star4),
             itemView.findViewById(R.id.star5)
         )
+        private var longPressHandler: Runnable? = null
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(mask: JSONObject) {
             try {
                 maskName.text = mask.getString("maskName")
@@ -46,6 +51,13 @@ class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 val fullStars = rating.toInt()
                 starViews.forEachIndexed { index, star ->
                     star.setImageResource(if (index < fullStars) R.drawable.star_filled else R.drawable.star_empty)
+                }
+
+                val isSelected = mask.getInt("id") == selectedMaskId
+                if (isSelected) {
+                    cardView.setBackgroundResource(R.drawable.selected_card_background)
+                } else {
+                    cardView.setBackgroundResource(R.drawable.default_card_background)
                 }
 
                 val firstImageUrl = try {
@@ -64,6 +76,25 @@ class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         .load(url)
                         .centerCrop()
                         .into(maskImage)
+                }
+
+                itemView.setOnTouchListener { view, event ->
+                    when (event.action) {
+                        android.view.MotionEvent.ACTION_DOWN -> {
+                            longPressHandler = Runnable {
+                                selectedMaskId = mask.getInt("id")
+                                notifyDataSetChanged()
+                                onMaskSelected(mask)
+                            }
+                            view.postDelayed(longPressHandler, 1000)
+                            true
+                        }
+                        android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                            longPressHandler?.let { view.removeCallbacks(it) }
+                            true
+                        }
+                        else -> false
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("MaskListAdapter", "Error binding mask data", e)
@@ -147,6 +178,11 @@ class MaskListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             isLoading = true
             notifyItemInserted(masksList.size)
         }
+    }
+
+    fun clearSelection() {
+        selectedMaskId = null
+        notifyDataSetChanged()
     }
 
     fun getLastSnapshot() = lastSnapshot

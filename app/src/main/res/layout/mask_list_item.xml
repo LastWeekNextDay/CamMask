@@ -2,12 +2,12 @@
 <androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_margin="8dp"
         app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
+        app:cardElevation="4dp"
+        android:background="@drawable/default_card_background">
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -24,14 +24,14 @@
 
         <TextView
                 android:id="@+id/maskName"
-                android:layout_width="379dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
         <LinearLayout
-                android:layout_width="218dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="4dp">
@@ -71,14 +71,13 @@
                         android:layout_height="16dp"
                         android:src="@android:drawable/star_big_off" />
             </LinearLayout>
-
         </LinearLayout>
 
         <TextView
                 android:id="@+id/ratingText"
-                android:layout_width="84dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:textSize="14sp" />
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>

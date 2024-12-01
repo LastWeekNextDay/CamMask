@@ -15,7 +15,6 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -31,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Locale
+import org.json.JSONObject
 
 class MainActivity : BaseActivity() {
     private lateinit var arFragment: ArFragment
@@ -75,7 +74,6 @@ class MainActivity : BaseActivity() {
 
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
-
                 checkAndRequestPermissions()
                 setupAR()
                 setupUI()
@@ -193,7 +191,11 @@ class MainActivity : BaseActivity() {
         }
 
         maskLoader = MaskLoader()
-        maskListAdapter = MaskListAdapter()
+        maskListAdapter = MaskListAdapter { selectedMask ->
+            CoroutineScope(Dispatchers.Main).launch {
+                loadSelectedMask(selectedMask)
+            }
+        }
 
         findViewById<RecyclerView>(R.id.maskList).apply {
             layoutManager = GridLayoutManager(this@MainActivity, 2)
@@ -244,9 +246,31 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private suspend fun loadSelectedMask(mask: JSONObject) {
+        try {
+            val maskUrl = mask.getString("maskUrl")
+            Log.d("MainActivity","Loading mask: $maskUrl")
+            loadingDialog.show("Loading mask...", transparentBackground = true)
+
+            modelHolder.loadModelRemote(maskUrl) { success ->
+                loadingDialog.hide()
+                if (success) {
+                    modelRenderer.setModel(modelHolder.getModel())
+                } else {
+                    maskListAdapter.clearSelection()
+                    Toast.makeText(this, "Failed to load mask", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Exception) {
+            loadingDialog.hide()
+            maskListAdapter.clearSelection()
+            Toast.makeText(this, "Error loading mask: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun handleModelFile(uri: Uri) {
         loadingDialog.show("Loading model...", transparentBackground = true)
-        modelHolder.loadModel(uri.toString()) { success ->
+        modelHolder.loadModelLocal(uri.toString()) { success ->
             loadingDialog.hide()
             if (success) {
                 modelRenderer.setModel(modelHolder.getModel())
