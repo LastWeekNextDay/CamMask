@@ -49,9 +49,9 @@ class MaskActivity : BaseActivity() {
             maskData = JSONObject(maskJson)
             setupViews()
             setupObservers()
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.Main).async {
                 loadComments()
-            }
+            }.start()
         } catch (e: Exception) {
             Toast.makeText(this, "Error loading mask data", Toast.LENGTH_SHORT).show()
             finish()
