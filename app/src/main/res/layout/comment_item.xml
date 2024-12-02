@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:background="@drawable/comment_input_background">
 
     <LinearLayout
             android:layout_width="wrap_content"
@@ -15,14 +15,14 @@
         <ImageView
                 android:id="@+id/userImage"
                 android:layout_width="48dp"
-                android:layout_height="48dp"/>
+                android:layout_height="48dp" />
 
         <TextView
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textSize="12sp"/>
+                android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -33,15 +33,15 @@
 
         <TextView
                 android:id="@+id/commentDate"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#80000000"/>
+                android:textColor="#80000000" />
 
         <TextView
                 android:id="@+id/commentText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"/>
+                android:layout_height="47dp"
+                android:layout_marginTop="4dp" />
     </LinearLayout>
 </LinearLayout>
