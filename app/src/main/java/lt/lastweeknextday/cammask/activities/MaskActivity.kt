@@ -35,6 +35,7 @@ class MaskActivity : BaseActivity() {
     private lateinit var maskData: JSONObject
     private lateinit var commentsAdapter: CommentsAdapter
     private var currentRating: Int = 0
+    private var isLoggingInOut = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +72,7 @@ class MaskActivity : BaseActivity() {
         val viewPager = findViewById<ViewPager2>(R.id.imageCarousel)
         viewPager.adapter = ImageCarouselAdapter(imagesList)
 
-        updateRatingDisplay(
+        updateAverageRatingDisplay(
             maskData.getDouble("averageRating"),
             maskData.getInt("ratingsCount")
         )
@@ -84,13 +85,26 @@ class MaskActivity : BaseActivity() {
         setupCommentSubmission()
     }
 
+    private fun setLoginLoadingState(loading: Boolean) {
+        isLoggingInOut = loading
+        val loginButton = findViewById<SignInButton>(R.id.loginButton)
+        val loginProgress = findViewById<View>(R.id.loginProgress)
+        if (loading) {
+            loginButton.visibility = View.INVISIBLE
+            loginProgress.visibility = View.VISIBLE
+        } else {
+            loginButton.visibility = View.VISIBLE
+            loginProgress.visibility = View.GONE
+        }
+    }
+
     private fun setupCommentSubmission() {
         val commentSection = findViewById<LinearLayout>(R.id.commentSubmissionSection)
         val loginButton = findViewById<SignInButton>(R.id.loginButton)
         val commentInput = findViewById<EditText>(R.id.commentInput)
         val submitButton = findViewById<Button>(R.id.submitComment)
         val ratingStars = findViewById<LinearLayout>(R.id.ratingStars)
-        val userRatingStars = findViewById<LinearLayout>(R.id.userRatingStars)
+        val userRatingStars = findViewById<LinearLayout>(R.id.userRatingStarsContainer)
 
         for (i in 0 until 5) {
             (userRatingStars.getChildAt(i) as ImageView).setOnClickListener {
@@ -111,7 +125,10 @@ class MaskActivity : BaseActivity() {
         }
 
         loginButton.setOnClickListener {
-            googleSignInManager.initiateSignIn()
+            if (!isLoggingInOut) {
+                setLoginLoadingState(true)
+                googleSignInManager.initiateSignIn()
+            }
         }
 
         updateSubmissionUIState()
@@ -138,6 +155,12 @@ class MaskActivity : BaseActivity() {
 
         var submitted = false
         var allowed = true
+        val ratingProgress = findViewById<View>(R.id.ratingProgress)
+        val container = findViewById<View>(R.id.userRatingStarsContainer)
+
+        container.visibility = View.GONE
+        ratingProgress.visibility = View.VISIBLE
+
         CoroutineScope(Dispatchers.IO).async {
             try {
                 if (!GoogleAuthManager.checkIfCanComment()) {
@@ -163,7 +186,6 @@ class MaskActivity : BaseActivity() {
                     client.newCall(request).execute().use { response ->
                         if (response.isSuccessful) {
                             currentRating = rating
-                            updateRatingStars()
                             val resultIntent = Intent().apply {
                                 putExtra("updatedMaskId", maskData.getInt("id"))
                             }
@@ -175,18 +197,30 @@ class MaskActivity : BaseActivity() {
                 }.await()
             } catch (e: Exception) {
                 Log.e("MaskActivity", "Error submitting rating", e)
-                submitted = true
+                submitted = false
             }
         }.await()
         if (!allowed) {
             Toast.makeText(this, "You cannot do this task", Toast.LENGTH_SHORT).show()
+            return
         } else if (!submitted) {
             Toast.makeText(this, "Error submitting rating", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        container.visibility = View.VISIBLE
+        ratingProgress.visibility = View.GONE
+        if (submitted) {
+            updateUserRatingStars()
         }
     }
 
     private suspend fun submitComment(comment: String) {
         var submitted = false
+        val commentButton = findViewById<Button>(R.id.submitComment)
+        val progressBar = findViewById<View>(R.id.submitCommentProgress)
+        commentButton.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
         CoroutineScope(Dispatchers.IO).async {
             try {
                 val maskId = maskData.getInt("id").toString()
@@ -215,6 +249,8 @@ class MaskActivity : BaseActivity() {
                 submitted = true
             }
         }.await()
+        commentButton.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
         if (!submitted) {
             CoroutineScope(Dispatchers.Main).launch {
                 Toast.makeText(this@MaskActivity, "Error submitting comment", Toast.LENGTH_SHORT).show()
@@ -266,7 +302,7 @@ class MaskActivity : BaseActivity() {
                     if (response.isSuccessful) {
                         maskData = JSONObject(response.body!!.string())
                         CoroutineScope(Dispatchers.Main).launch {
-                            updateRatingDisplay(
+                            updateAverageRatingDisplay(
                                 maskData.getDouble("averageRating"),
                                 maskData.getInt("ratingsCount")
                             )
@@ -290,6 +326,12 @@ class MaskActivity : BaseActivity() {
             return
         }
 
+        val ratingProgress = findViewById<View>(R.id.ratingProgress)
+        val container = findViewById<View>(R.id.userRatingStarsContainer)
+
+        container.visibility = View.GONE
+        ratingProgress.visibility = View.VISIBLE
+
         CoroutineScope(Dispatchers.IO).async {
             try {
                 val client = OkHttpClient()
@@ -304,7 +346,7 @@ class MaskActivity : BaseActivity() {
                     } else if (response.isSuccessful) {
                         val ratingData = JSONObject(response.body!!.string())
                         currentRating = ratingData.getInt("rating")
-                        updateRatingStars()
+                        updateUserRatingStars()
                     } else {
                         Log.e("MaskActivity", "Failed to load user rating: ${response.code}")
                     }
@@ -313,9 +355,12 @@ class MaskActivity : BaseActivity() {
                 Log.e("MaskActivity", "Error loading user rating", e)
             }
         }.await()
+
+        container.visibility = View.VISIBLE
+        ratingProgress.visibility = View.GONE
     }
 
-    private fun updateRatingDisplay(rating: Double, count: Int) {
+    private fun updateAverageRatingDisplay(rating: Double, count: Int) {
         findViewById<TextView>(R.id.ratingText).text =
             String.format("%.1f (%d ratings)", rating, count)
 
@@ -328,8 +373,8 @@ class MaskActivity : BaseActivity() {
         }
     }
 
-    private fun updateRatingStars() {
-        val userRatingStars = findViewById<LinearLayout>(R.id.userRatingStars)
+    private fun updateUserRatingStars() {
+        val userRatingStars = findViewById<LinearLayout>(R.id.userRatingStarsContainer)
         for (i in 0 until 5) {
             (userRatingStars.getChildAt(i) as ImageView)
                 .setImageResource(if (i < currentRating) R.drawable.star_filled else R.drawable.star_empty)
@@ -340,12 +385,15 @@ class MaskActivity : BaseActivity() {
         GoogleAuthManager.isLoggedIn.observe(this) { isLoggedIn ->
             updateSubmissionUIState()
             if (isLoggedIn) {
+                setLoginLoadingState(false)
+                val signInButton = findViewById<SignInButton>(R.id.loginButton)
+                signInButton.visibility = View.GONE
                 CoroutineScope(Dispatchers.Main).launch {
                     loadUserRating()
                 }
             } else {
                 currentRating = 0
-                updateRatingStars()
+                updateUserRatingStars()
             }
         }
     }

@@ -47,6 +47,12 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
             .get()
             .build()
 
+        val contents = holder.itemView.findViewById<View>(R.id.commentContainerContents)
+        val progress = holder.itemView.findViewById<View>(R.id.commentProgress)
+
+        contents.visibility = View.GONE
+        progress.visibility = View.VISIBLE
+
         holder.itemView.post {
             try {
                 CoroutineScope(Dispatchers.Main).launch {
@@ -76,6 +82,9 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
                 holder.userName.text = "Unknown User"
             }
         }
+
+        contents.visibility = View.VISIBLE
+        progress.visibility = View.GONE
 
         holder.commentText.text = comment.getString("comment")
         holder.commentDate.text = dateFormat.format(

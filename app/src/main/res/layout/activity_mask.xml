@@ -90,12 +90,23 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp" />
 
-            <com.google.android.gms.common.SignInButton
-                    android:id="@+id/loginButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:visibility="gone" />
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <com.google.android.gms.common.SignInButton
+                        android:id="@+id/loginButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+
+                <ProgressBar
+                        android:id="@+id/loginProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"/>
+            </FrameLayout>
 
             <LinearLayout
                     android:id="@+id/commentSubmissionSection"
@@ -122,30 +133,51 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
 
-                        <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/star_empty" />
+                        <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
 
-                        <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/star_empty" />
+                            <LinearLayout
+                                    android:id="@+id/userRatingStarsContainer"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
 
-                        <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/star_empty" />
+                                <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/star_empty" />
 
-                        <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/star_empty" />
+                                <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/star_empty" />
 
-                        <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/star_empty" />
+                                <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/star_empty" />
+
+                                <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/star_empty" />
+
+                                <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/star_empty" />
+
+                            </LinearLayout>
+
+                            <ProgressBar
+                                    android:id="@+id/ratingProgress"
+                                    android:layout_width="478dp"
+                                    android:layout_height="54dp"
+                                    android:layout_gravity="center"
+                                    android:visibility="gone" />
+
+                        </FrameLayout>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -160,12 +192,23 @@
                         android:hint="Write your comment..."
                         android:layout_marginBottom="8dp" />
 
-                <Button
-                        android:id="@+id/submitComment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Submit"
-                        android:layout_gravity="end" />
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                    <Button
+                            android:id="@+id/submitComment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Submit"
+                            android:layout_gravity="end" />
+                    <ProgressBar
+                            android:id="@+id/submitCommentProgress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:visibility="gone"/>
+                </FrameLayout>
+
             </LinearLayout>
 
             <TextView
