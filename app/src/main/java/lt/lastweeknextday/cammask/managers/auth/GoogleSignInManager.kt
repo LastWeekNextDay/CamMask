@@ -11,6 +11,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -18,12 +19,12 @@ class GoogleSignInManager(private val activity: AppCompatActivity) {
     private val activityResultLauncher: ActivityResultLauncher<Intent> = activity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.Main).async {
             try {
                 if (result.resultCode != AppCompatActivity.RESULT_OK) {
                     Log.d("GoogleSignInManager", "Sign in failed with result code: ${result.resultCode}")
                     GoogleAuthManager.logout()
-                    return@launch
+                    return@async
                 }
 
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -32,7 +33,7 @@ class GoogleSignInManager(private val activity: AppCompatActivity) {
                 Log.e("GoogleSignInManager", "Sign in failed", e)
                 GoogleAuthManager.logout()
             }
-        }
+        }.start()
     }
 
     private var googleSignInClient: GoogleSignInClient
