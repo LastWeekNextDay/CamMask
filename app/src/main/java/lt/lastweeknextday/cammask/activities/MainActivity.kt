@@ -233,6 +233,9 @@ class MainActivity : BaseActivity() {
                     loadSelectedMask(selectedMask)
                 }
             },
+            onMaskUnselected = {
+                unloadSelectedMask()
+            },
             onMaskClicked = { mask ->
                 val intent = Intent(this, MaskActivity::class.java)
                 intent.putExtra("maskData", mask.toString())
@@ -309,6 +312,12 @@ class MainActivity : BaseActivity() {
             maskListAdapter.clearSelection()
             Toast.makeText(this, "Error loading mask: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun unloadSelectedMask() {
+        maskListAdapter.clearSelection()
+        modelRenderer.clearModel()
+        modelHolder.cleanup()
     }
 
     private fun handleModelFile(uri: Uri) {

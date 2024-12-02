@@ -16,6 +16,11 @@ class ModelRenderer(private val arSceneView: ArSceneView) {
         currentModel = model
     }
 
+    fun clearModel() {
+        currentModel = null
+        cleanup()
+    }
+
     fun onFaceDetected(face: AugmentedFace) {
         val model = currentModel ?: return
         val existingFaceNode = faceNodes[face]

@@ -14,7 +14,9 @@ import com.bumptech.glide.Glide
 import lt.lastweeknextday.cammask.R
 import org.json.JSONObject
 
-class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private val onMaskClicked: (JSONObject) -> Unit)
+class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit,
+                      private val onMaskUnselected: (JSONObject) -> Unit,
+                      private val onMaskClicked: (JSONObject) -> Unit)
     : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val masksList = mutableListOf<JSONObject>()
     private val loadedIds = mutableSetOf<Int>()
@@ -88,9 +90,14 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private 
                             isLongPress = false
                             longPressHandler = Runnable {
                                 isLongPress = true
-                                selectedMaskId = mask.getInt("id")
-                                notifyDataSetChanged()
-                                onMaskSelected(mask)
+                                if (isSelected) {
+                                    selectedMaskId = null
+                                    onMaskUnselected(mask)
+                                } else {
+                                    selectedMaskId = mask.getInt("id")
+                                    notifyDataSetChanged()
+                                    onMaskSelected(mask)
+                                }
                             }
                             view.postDelayed(longPressHandler, 1000)
                             true
