@@ -3,6 +3,7 @@ package lt.lastweeknextday.cammask
 import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -12,7 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import org.json.JSONObject
 
-class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private val onMaskClicked: (JSONObject) -> Unit)
+    : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val masksList = mutableListOf<JSONObject>()
     private val loadedIds = mutableSetOf<Int>()
     private var isLoading = false
@@ -39,6 +41,7 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : Recyc
             itemView.findViewById(R.id.star5)
         )
         private var longPressHandler: Runnable? = null
+        private var isLongPress = false
 
         @SuppressLint("ClickableViewAccessibility")
         fun bind(mask: JSONObject) {
@@ -80,8 +83,10 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : Recyc
 
                 itemView.setOnTouchListener { view, event ->
                     when (event.action) {
-                        android.view.MotionEvent.ACTION_DOWN -> {
+                        MotionEvent.ACTION_DOWN -> {
+                            isLongPress = false
                             longPressHandler = Runnable {
+                                isLongPress = true
                                 selectedMaskId = mask.getInt("id")
                                 notifyDataSetChanged()
                                 onMaskSelected(mask)
@@ -89,7 +94,14 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : Recyc
                             view.postDelayed(longPressHandler, 1000)
                             true
                         }
-                        android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                        MotionEvent.ACTION_UP -> {
+                            longPressHandler?.let { view.removeCallbacks(it) }
+                            if (!isLongPress) {
+                                onMaskClicked(mask)
+                            }
+                            true
+                        }
+                        MotionEvent.ACTION_CANCEL -> {
                             longPressHandler?.let { view.removeCallbacks(it) }
                             true
                         }
@@ -177,6 +189,18 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit)  : Recyc
         if (!isLoading && hasMoreItems) {
             isLoading = true
             notifyItemInserted(masksList.size)
+        }
+    }
+
+    fun updateMask(updatedMask: JSONObject) {
+        val maskId = updatedMask.getInt("id")
+        val position = masksList.indexOfFirst {
+            it.getInt("id") == maskId
+        }
+
+        if (position != -1) {
+            masksList[position] = updatedMask
+            notifyItemChanged(position)
         }
     }
 

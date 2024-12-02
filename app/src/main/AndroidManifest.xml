@@ -43,5 +43,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".UploadActivity" android:exported="false" />
+        <activity android:name=".MaskActivity" android:exported="false" />
     </application>
 </manifest>

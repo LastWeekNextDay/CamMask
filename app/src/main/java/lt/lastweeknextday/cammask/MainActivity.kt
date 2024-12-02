@@ -28,8 +28,11 @@ import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.json.JSONObject
 
 class MainActivity : BaseActivity() {
@@ -59,6 +62,18 @@ class MainActivity : BaseActivity() {
                     handleModelFile(uri)
                 } else {
                     Toast.makeText(this, "Please select a GLB file", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private val maskActivityLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getIntExtra("updatedMaskId", -1)?.let { maskId ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    refreshMaskInList(maskId)
                 }
             }
         }
@@ -191,11 +206,18 @@ class MainActivity : BaseActivity() {
         }
 
         maskLoader = MaskLoader()
-        maskListAdapter = MaskListAdapter { selectedMask ->
-            CoroutineScope(Dispatchers.Main).launch {
-                loadSelectedMask(selectedMask)
+        maskListAdapter = MaskListAdapter(
+            onMaskSelected = { selectedMask ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    loadSelectedMask(selectedMask)
+                }
+            },
+            onMaskClicked = { mask ->
+                val intent = Intent(this, MaskActivity::class.java)
+                intent.putExtra("maskData", mask.toString())
+                maskActivityLauncher.launch(intent)
             }
-        }
+        )
 
         findViewById<RecyclerView>(R.id.maskList).apply {
             layoutManager = GridLayoutManager(this@MainActivity, 2)
@@ -333,6 +355,32 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private suspend fun refreshMaskInList(maskId: Int) {
+        CoroutineScope(Dispatchers.Main).async {
+            try {
+                val client = OkHttpClient()
+                val request = Request.Builder()
+                    .url("https://getmask-${Constants.BASE_URL}/?maskId=$maskId")
+                    .get()
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val updatedMask = JSONObject(response.body!!.string())
+                        updateMaskInAdapter(updatedMask)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error refreshing mask data", e)
+            }
+        }.await()
+    }
+
+    private fun updateMaskInAdapter(updatedMask: JSONObject) {
+        val adapter = findViewById<RecyclerView>(R.id.maskList).adapter as MaskListAdapter
+        adapter.updateMask(updatedMask)
     }
 
     override fun onResume() {
