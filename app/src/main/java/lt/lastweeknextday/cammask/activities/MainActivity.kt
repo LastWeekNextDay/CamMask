@@ -78,6 +78,7 @@ class MainActivity : BaseActivity() {
                 val fileInfo = fileAnalyzer.analyze(applicationContext, uri)
                 Log.d("MainActivity", "File info: $fileInfo")
                 if (fileInfo.extension == "glb") {
+                    maskListAdapter.clearSelection()
                     handleModelFile(uri)
                 } else {
                     Toast.makeText(this, "Please select a GLB file", Toast.LENGTH_SHORT).show()
@@ -411,7 +412,7 @@ class MainActivity : BaseActivity() {
                 override fun onTick(millisUntilFinished: Long) {}
 
                 override fun onFinish() {
-                    maskListAdapter.clearAll()
+                    maskListAdapter.clearAllButSelection()
                     loadMoreMasks()
                     swipeRefreshLayout.isRefreshing = false
                 }

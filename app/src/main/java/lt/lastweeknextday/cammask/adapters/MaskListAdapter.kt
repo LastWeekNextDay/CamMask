@@ -172,6 +172,10 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private 
             if (id != -1 && loadedIds.add(id)) {
                 masksList.add(mask)
                 addedCount++
+
+                if (id == selectedMaskId) {
+                    onMaskSelected(mask)
+                }
             }
         }
 
@@ -210,7 +214,16 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private 
         notifyDataSetChanged()
     }
 
-    fun clearAll() {
+    fun clearAllButSelection() {
+        masksList.clear()
+        loadedIds.clear()
+        lastId = null
+        lastSnapshot = null
+        hasMoreItems = true
+        notifyDataSetChanged()
+    }
+
+    fun clearAll(){
         masksList.clear()
         loadedIds.clear()
         lastId = null
