@@ -78,7 +78,7 @@
                 android:layout_marginBottom="16dp"/>
 
         <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginBottom="16dp">
@@ -88,14 +88,14 @@
                     android:layout_height="1dp"
                     android:background="#DDDDDD"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="16dp" />
 
             <com.google.android.gms.common.SignInButton
                     android:id="@+id/loginButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
             <LinearLayout
                     android:id="@+id/commentSubmissionSection"
@@ -114,7 +114,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Your rating: "
-                            android:layout_marginEnd="8dp"/>
+                            android:layout_marginEnd="8dp" />
 
                     <LinearLayout
                             android:id="@+id/userRatingStars"
@@ -125,27 +125,27 @@
                         <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/star_empty"/>
+                                android:src="@drawable/star_empty" />
 
                         <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/star_empty"/>
+                                android:src="@drawable/star_empty" />
 
                         <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/star_empty"/>
+                                android:src="@drawable/star_empty" />
 
                         <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/star_empty"/>
+                                android:src="@drawable/star_empty" />
 
                         <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/star_empty"/>
+                                android:src="@drawable/star_empty" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -158,14 +158,14 @@
                         android:padding="8dp"
                         android:background="@drawable/comment_input_background"
                         android:hint="Write your comment..."
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_marginBottom="8dp" />
 
                 <Button
                         android:id="@+id/submitComment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Submit"
-                        android:layout_gravity="end"/>
+                        android:layout_gravity="end" />
             </LinearLayout>
 
             <TextView
@@ -175,12 +175,12 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/commentsList"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
