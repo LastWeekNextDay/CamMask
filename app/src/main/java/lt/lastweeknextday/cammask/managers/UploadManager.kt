@@ -1,8 +1,10 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import lt.lastweeknextday.cammask.misc.Constants
+import lt.lastweeknextday.cammask.misc.FileAnalyzer
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient

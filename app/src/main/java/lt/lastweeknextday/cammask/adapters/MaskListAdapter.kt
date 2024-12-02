@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.adapters
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import lt.lastweeknextday.cammask.R
 import org.json.JSONObject
 
 class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private val onMaskClicked: (JSONObject) -> Unit)

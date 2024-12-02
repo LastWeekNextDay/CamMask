@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers.auth
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -6,21 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import lt.lastweeknextday.cammask.data.UserData
+import lt.lastweeknextday.cammask.misc.Constants
 import org.json.JSONObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-
-data class UserData(
-    val id: String,
-    val name: String,
-    val photoUrl: String,
-    val canComment: Boolean,
-    val canUpload: Boolean,
-    val creationDate: String,
-    val lastAccess: String
-)
 
 object GoogleAuthManager {
     private val _isLoggedIn = MutableLiveData<Boolean>()

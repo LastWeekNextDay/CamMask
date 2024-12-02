@@ -1,4 +1,6 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.misc
+
+import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 
 object Constants {
     const val DEBUG_MODE = true

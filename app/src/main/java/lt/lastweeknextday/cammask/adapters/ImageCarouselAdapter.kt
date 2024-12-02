@@ -1,18 +1,12 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Locale
+import lt.lastweeknextday.cammask.R
 
 class ImageCarouselAdapter(private val images: List<String>) :
     RecyclerView.Adapter<ImageCarouselAdapter.ViewHolder>() {

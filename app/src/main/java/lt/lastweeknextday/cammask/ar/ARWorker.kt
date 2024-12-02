@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.ar
 
 import com.google.ar.core.AugmentedFace
 import com.google.ar.core.TrackingState

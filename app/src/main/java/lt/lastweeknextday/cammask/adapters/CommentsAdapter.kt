@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import lt.lastweeknextday.cammask.misc.Constants
+import lt.lastweeknextday.cammask.R
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray

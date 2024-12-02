@@ -1,14 +1,15 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers
 
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import lt.lastweeknextday.cammask.misc.Constants
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class MaskLoader {
+class MaskLoadManager {
     private val client = OkHttpClient()
 
     suspend fun loadMasks(limit: Int = 6, lastId: Int? = null,

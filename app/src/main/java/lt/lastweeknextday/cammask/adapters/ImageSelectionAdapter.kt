@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.adapters
 
 import android.net.Uri
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RadioButton
 import androidx.recyclerview.widget.RecyclerView
+import lt.lastweeknextday.cammask.R
 
 class ImageSelectionAdapter(
     private var images: List<Uri>,

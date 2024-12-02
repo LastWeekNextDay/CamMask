@@ -4,7 +4,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context=".MainActivity">
+        tools:context=".activities.MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
             android:id="@+id/arFragment"
@@ -23,11 +23,11 @@
 
 
     <!-- Slide Menu -->
-    <lt.lastweeknextday.cammask.SlideMenuLayout
+    <lt.lastweeknextday.cammask.ui.objects.SlideMenuLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <include layout="@layout/slide_menu"/>
-    </lt.lastweeknextday.cammask.SlideMenuLayout>
+    </lt.lastweeknextday.cammask.ui.objects.SlideMenuLayout>
 
     <RelativeLayout
             android:id="@+id/controlsLayout"

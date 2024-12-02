@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.ar
 
 import android.util.Log
 import com.google.ar.core.AugmentedFace

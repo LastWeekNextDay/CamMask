@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers.camera
 
 import android.content.ContentValues
 import android.content.Context

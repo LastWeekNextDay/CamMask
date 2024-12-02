@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.activities
 
 import android.app.Activity
 import android.content.Intent
@@ -33,26 +33,40 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lt.lastweeknextday.cammask.misc.Constants
+import lt.lastweeknextday.cammask.misc.FileAnalyzer
+import lt.lastweeknextday.cammask.managers.camera.GalleryManager
+import lt.lastweeknextday.cammask.ui.objects.LoadingDialog
+import lt.lastweeknextday.cammask.adapters.MaskListAdapter
+import lt.lastweeknextday.cammask.managers.MaskLoadManager
+import lt.lastweeknextday.cammask.managers.camera.MediaCaptureManager
+import lt.lastweeknextday.cammask.R
+import lt.lastweeknextday.cammask.ar.ARWorker
+import lt.lastweeknextday.cammask.ar.ModelHolder
+import lt.lastweeknextday.cammask.ar.ModelRenderer
+import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
 class MainActivity : BaseActivity() {
     private lateinit var arFragment: ArFragment
-    private lateinit var loadingDialog: LoadingDialog
     private lateinit var modelHolder: ModelHolder
     private lateinit var modelRenderer: ModelRenderer
     private lateinit var arWorker: ARWorker
-    private lateinit var mediaCaptureManager: MediaCaptureManager
+    private lateinit var loadingDialog: LoadingDialog
 
+    private lateinit var mediaCaptureManager: MediaCaptureManager
     private lateinit var flashOverlay: View
+
     private lateinit var galleryManager: GalleryManager
     private lateinit var galleryButton: ImageButton
 
     private lateinit var fileAnalyzer: FileAnalyzer
 
     private lateinit var maskListAdapter: MaskListAdapter
-    private lateinit var maskLoader: MaskLoader
+
+    private lateinit var maskLoadManager: MaskLoadManager
 
     private var refreshTimer: CountDownTimer? = null
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -211,7 +225,7 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        maskLoader = MaskLoader()
+        maskLoadManager = MaskLoadManager()
         maskListAdapter = MaskListAdapter(
             onMaskSelected = { selectedMask ->
                 CoroutineScope(Dispatchers.Main).launch {
@@ -335,7 +349,7 @@ class MainActivity : BaseActivity() {
         lifecycleScope.launch {
             try {
                 maskListAdapter.loadMore()
-                val (newMasks, lastId) = maskLoader.loadMasks(
+                val (newMasks, lastId) = maskLoadManager.loadMasks(
                     limit = 6,
                     lastId = maskListAdapter.getLastId()?.let { Integer.parseInt(it) },
                     orderBy = "ratingsCount",

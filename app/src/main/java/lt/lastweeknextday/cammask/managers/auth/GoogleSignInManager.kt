@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers.auth
 
 import android.content.Intent
 import android.util.Log

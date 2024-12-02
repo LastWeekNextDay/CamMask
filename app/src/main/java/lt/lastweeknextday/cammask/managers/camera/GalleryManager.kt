@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.managers.camera
 
 import android.app.Activity
 import android.content.ActivityNotFoundException

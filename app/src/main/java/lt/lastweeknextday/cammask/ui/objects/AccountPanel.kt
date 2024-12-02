@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.ui.objects
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -17,6 +17,9 @@ import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import com.bumptech.glide.Glide
 import com.google.android.gms.common.SignInButton
+import lt.lastweeknextday.cammask.R
+import lt.lastweeknextday.cammask.activities.BaseActivity
+import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

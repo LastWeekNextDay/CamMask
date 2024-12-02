@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.ar
 
 import android.content.Context
 import android.net.Uri

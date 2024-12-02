@@ -1,7 +1,6 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.activities
 
 import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,7 +12,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.SignInButton
@@ -25,16 +23,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import lt.lastweeknextday.cammask.misc.Constants
+import lt.lastweeknextday.cammask.misc.FileAnalyzer
+import lt.lastweeknextday.cammask.adapters.ImageSelectionAdapter
+import lt.lastweeknextday.cammask.R
+import lt.lastweeknextday.cammask.managers.UploadManager
+import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.internal.wait
 import org.json.JSONObject
-import java.io.File
 import java.io.IOException
-import java.util.Locale
 
 class UploadActivity : BaseActivity() {
     private val uploadManager = UploadManager(this)

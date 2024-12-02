@@ -1,8 +1,10 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.activities
 
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import lt.lastweeknextday.cammask.ui.objects.AccountPanel
+import lt.lastweeknextday.cammask.managers.auth.GoogleSignInManager
 
 open class BaseActivity : AppCompatActivity() {
     lateinit var googleSignInManager: GoogleSignInManager

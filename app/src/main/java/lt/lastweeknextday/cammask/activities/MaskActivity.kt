@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.activities
 
 import android.app.Activity
 import android.content.Intent
@@ -11,25 +11,25 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
 import com.google.android.gms.common.SignInButton
-import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import lt.lastweeknextday.cammask.adapters.CommentsAdapter
+import lt.lastweeknextday.cammask.misc.Constants
+import lt.lastweeknextday.cammask.adapters.ImageCarouselAdapter
+import lt.lastweeknextday.cammask.R
+import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class MaskActivity : BaseActivity() {
     private lateinit var maskData: JSONObject

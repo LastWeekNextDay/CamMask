@@ -1,4 +1,4 @@
-package lt.lastweeknextday.cammask
+package lt.lastweeknextday.cammask.ui.objects
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -10,6 +10,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.TextView
+import lt.lastweeknextday.cammask.R
 
 @SuppressLint("InflateParams")
 class LoadingDialog(context: Context) {
