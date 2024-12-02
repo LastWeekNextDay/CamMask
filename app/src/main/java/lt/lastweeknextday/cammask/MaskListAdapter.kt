@@ -209,6 +209,16 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit, private 
         notifyDataSetChanged()
     }
 
+    fun clearAll() {
+        masksList.clear()
+        loadedIds.clear()
+        lastId = null
+        lastSnapshot = null
+        hasMoreItems = true
+        selectedMaskId = null
+        notifyDataSetChanged()
+    }
+
     fun getLastSnapshot() = lastSnapshot
     fun isLoading() = isLoading
     fun hasMore() = hasMoreItems

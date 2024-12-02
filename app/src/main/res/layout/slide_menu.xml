@@ -42,14 +42,20 @@
                     android:text="Filter" />
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/maskList"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeRefreshLayout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:minHeight="200dp" />
+                android:layout_marginBottom="16dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/maskList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:minHeight="200dp" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <LinearLayout
                 android:layout_width="match_parent"

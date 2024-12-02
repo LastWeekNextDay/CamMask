@@ -78,4 +78,5 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.glide)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

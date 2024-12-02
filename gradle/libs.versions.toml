@@ -29,11 +29,13 @@ appcompat = "1.7.0"
 cardview = "1.0.0"
 recyclerview = "1.3.2"
 material = "1.12.0"
+swiperefreshlayout = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
 core = { module = "com.google.ar:core", version.ref = "core" }
 core-v1310 = { module = "com.google.ar:core", version.ref = "googleCore" }

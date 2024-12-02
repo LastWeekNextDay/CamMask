@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -20,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.ar.core.CameraConfig
 import com.google.ar.core.CameraConfigFilter
 import com.google.ar.core.Config
@@ -51,6 +53,9 @@ class MainActivity : BaseActivity() {
 
     private lateinit var maskListAdapter: MaskListAdapter
     private lateinit var maskLoader: MaskLoader
+
+    private var refreshTimer: CountDownTimer? = null
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -92,6 +97,7 @@ class MainActivity : BaseActivity() {
                 checkAndRequestPermissions()
                 setupAR()
                 setupUI()
+                setupSwipeRefresh()
             } else {
                 finish()
             }
@@ -381,6 +387,27 @@ class MainActivity : BaseActivity() {
     private fun updateMaskInAdapter(updatedMask: JSONObject) {
         val adapter = findViewById<RecyclerView>(R.id.maskList).adapter as MaskListAdapter
         adapter.updateMask(updatedMask)
+    }
+
+    private fun setupSwipeRefresh() {
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            refreshTimer?.cancel()
+            refreshTimer = object : CountDownTimer(1000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {}
+
+                override fun onFinish() {
+                    maskListAdapter.clearAll()
+                    loadMoreMasks()
+                    swipeRefreshLayout.isRefreshing = false
+                }
+            }.start()
+        }
+
+        swipeRefreshLayout.setOnChildScrollUpCallback { _, _ ->
+            refreshTimer?.cancel()
+            false
+        }
     }
 
     override fun onResume() {
