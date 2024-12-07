@@ -63,6 +63,9 @@ class MaskActivity : BaseActivity() {
         findViewById<TextView>(R.id.maskName).text = maskData.getString("maskName")
         findViewById<TextView>(R.id.maskDescription).text =
             maskData.optString("description", "No description available")
+        val tagsRaw = maskData.getString("tags")
+        val tags = tagsRaw.trim('[', ']').split(",").map { it.trim() }
+        findViewById<TextView>(R.id.tagTextMain).text = tags.joinToString(", ")
 
         val imagesList = maskData.getString("images")
             .trim('[', ']')
