@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,7 @@ import org.json.JSONObject
 
 class MaskActivity : BaseActivity() {
     private lateinit var maskData: JSONObject
+    private lateinit var userData: JSONObject
     private lateinit var commentsAdapter: CommentsAdapter
     private var currentRating: Int = 0
     private var isLoggingInOut = false
@@ -48,6 +50,14 @@ class MaskActivity : BaseActivity() {
 
         try {
             maskData = JSONObject(maskJson)
+            CoroutineScope(Dispatchers.Main).launch {
+                userData = fetchUserData(maskData.getString("uploaderGoogleId"))
+                if (userData.getInt("id") == -1) {
+                    Toast.makeText(this@MaskActivity, "Error loading uploader data", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                setupUploaderView()
+            }.start()
             setupViews()
             setupObservers()
             CoroutineScope(Dispatchers.Main).async {
@@ -57,6 +67,26 @@ class MaskActivity : BaseActivity() {
             Toast.makeText(this, "Error loading mask data", Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
+
+    private suspend fun fetchUserData(googleId: String): JSONObject {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://getuser-${Constants.BASE_URL}/?googleId=$googleId")
+            .get()
+            .build()
+
+        var userData = JSONObject()
+        CoroutineScope(Dispatchers.IO).async {
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    userData = JSONObject(response.body!!.string())
+                } else {
+                    Log.e("MaskActivity", "Failed to load user data: ${response.code}")
+                }
+            }
+        }.await()
+        return userData
     }
 
     private fun setupViews() {
@@ -86,6 +116,16 @@ class MaskActivity : BaseActivity() {
         commentsList.adapter = commentsAdapter
 
         setupCommentSubmission()
+    }
+
+    private fun setupUploaderView(){
+        findViewById<TextView>(R.id.userNameUploader).text = userData.getString("name")
+        val uploaderImage = findViewById<ImageView>(R.id.userImageUploader)
+        if (userData.getString("photoUrl") != ""){
+            Glide.with(this).load(userData.getString("photoUrl")).into(uploaderImage)
+        } else {
+            uploaderImage.setImageResource(R.drawable.default_pic)
+        }
     }
 
     private fun setLoginLoadingState(loading: Boolean) {
