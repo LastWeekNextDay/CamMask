@@ -1,6 +1,7 @@
 package lt.lastweeknextday.cammask.activities
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
@@ -12,8 +13,10 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -22,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.textfield.TextInputEditText
 import com.google.ar.core.CameraConfig
 import com.google.ar.core.CameraConfigFilter
 import com.google.ar.core.Config
@@ -44,6 +48,7 @@ import lt.lastweeknextday.cammask.R
 import lt.lastweeknextday.cammask.ar.ARWorker
 import lt.lastweeknextday.cammask.ar.ModelHolder
 import lt.lastweeknextday.cammask.ar.ModelRenderer
+import lt.lastweeknextday.cammask.data.FilterSettings
 import lt.lastweeknextday.cammask.managers.auth.GoogleAuthManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -70,6 +75,9 @@ class MainActivity : BaseActivity() {
 
     private var refreshTimer: CountDownTimer? = null
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+    private var currentFilter = FilterSettings()
+    private lateinit var filterDialog: Dialog
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -279,8 +287,7 @@ class MainActivity : BaseActivity() {
         }
 
         findViewById<Button>(R.id.filterButton).setOnClickListener {
-            // TODO: Filter func
-            Toast.makeText(this, "Filter functionality coming soon", Toast.LENGTH_SHORT).show()
+            showFilterDialog()
         }
 
         findViewById<Button>(R.id.testButton).setOnClickListener {
@@ -355,6 +362,84 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private fun showFilterDialog() {
+        filterDialog = Dialog(this).apply {
+            setContentView(R.layout.dialog_filter)
+            setCancelable(false)
+            window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        with(filterDialog) {
+            findViewById<TextInputEditText>(R.id.tagsInput).setText(
+                currentFilter.tags.joinToString(", ")
+            )
+
+            val orderByGroup = findViewById<RadioGroup>(R.id.orderByGroup)
+            when (currentFilter.orderBy) {
+                "ratingsCount" -> orderByGroup.check(R.id.orderByPopularity)
+                "averageRating" -> orderByGroup.check(R.id.orderByRating)
+                "maskName" -> orderByGroup.check(R.id.orderByName)
+                "uploadedOn" -> orderByGroup.check(R.id.orderByDate)
+            }
+
+            val orderDirectionGroup = findViewById<RadioGroup>(R.id.orderDirectionGroup)
+            if (currentFilter.orderDirection == "asc") {
+                orderDirectionGroup.check(R.id.orderAscending)
+            } else {
+                orderDirectionGroup.check(R.id.orderDescending)
+            }
+
+            findViewById<Button>(R.id.resetButton).setOnClickListener {
+                currentFilter = FilterSettings()
+                maskListAdapter.clearAllButSelection()
+                loadMoreMasks()
+                dismiss()
+            }
+
+            findViewById<Button>(R.id.cancelButton).setOnClickListener {
+                dismiss()
+            }
+
+            findViewById<Button>(R.id.applyButton).setOnClickListener {
+                applyFilter()
+                dismiss()
+            }
+        }
+
+        filterDialog.show()
+    }
+
+    private fun applyFilter() {
+        val newFilter = FilterSettings()
+
+        with(filterDialog) {
+            val tagsText = findViewById<TextInputEditText>(R.id.tagsInput).text.toString()
+            newFilter.tags = tagsText.split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
+            newFilter.orderBy = when (findViewById<RadioGroup>(R.id.orderByGroup).checkedRadioButtonId) {
+                R.id.orderByPopularity -> "ratingsCount"
+                R.id.orderByRating -> "averageRating"
+                R.id.orderByName -> "maskName"
+                R.id.orderByDate -> "uploadedOn"
+                else -> "ratingsCount"
+            }
+
+            newFilter.orderDirection = when (findViewById<RadioGroup>(R.id.orderDirectionGroup).checkedRadioButtonId) {
+                R.id.orderAscending -> "asc"
+                else -> "desc"
+            }
+        }
+
+        currentFilter = newFilter
+        maskListAdapter.clearAllButSelection()
+        loadMoreMasks()
+    }
+
     private fun loadMoreMasks() {
         lifecycleScope.launch {
             try {
@@ -362,8 +447,9 @@ class MainActivity : BaseActivity() {
                 val (newMasks, lastId) = maskLoadManager.loadMasks(
                     limit = 6,
                     lastId = maskListAdapter.getLastId()?.let { Integer.parseInt(it) },
-                    orderBy = "ratingsCount",
-                    orderDirection = "desc"
+                    orderBy = currentFilter.orderBy,
+                    orderDirection = currentFilter.orderDirection,
+                    filterTags = currentFilter.tags
                 )
                 maskListAdapter.addMasks(newMasks, lastId)
             } catch (e: Exception) {

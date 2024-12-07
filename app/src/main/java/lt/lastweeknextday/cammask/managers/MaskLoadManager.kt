@@ -26,9 +26,6 @@ class MaskLoadManager {
             if (orderDirection.isNotEmpty()) {
                 url += "&orderDirection=$orderDirection"
             }
-            if (filterTags.isNotEmpty()) {
-                url += "&tags=${filterTags.joinToString(",")}"
-            }
 
             Log.d("MaskLoader", "Loading masks with URL: $url")
 
@@ -52,7 +49,17 @@ class MaskLoadManager {
                     Log.d("MaskLoader", "Received ${masksArray.length()} masks")
 
                     for (i in 0 until masksArray.length()) {
-                        masks.add(masksArray.getJSONObject(i))
+                        if (filterTags.isNotEmpty()) {
+                            val maskTags = masksArray.getJSONObject(i).getString("tags")
+                                .trim('[', ']').split(",").map { it.trim() }
+                            if (!maskTags.containsAll(filterTags)) {
+                                continue
+                            } else {
+                                masks.add(masksArray.getJSONObject(i))
+                            }
+                        } else {
+                            masks.add(masksArray.getJSONObject(i))
+                        }
                     }
 
                     val nextId = if (!jsonResponse.isNull("lastId")) {
