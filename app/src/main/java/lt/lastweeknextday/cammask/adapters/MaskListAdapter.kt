@@ -35,6 +35,7 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit,
         private val maskImage: ImageView = itemView.findViewById(R.id.maskImage)
         private val maskName: TextView = itemView.findViewById(R.id.maskName)
         private val ratingText: TextView = itemView.findViewById(R.id.ratingText)
+        private val tagText: TextView = itemView.findViewById(R.id.tagText)
         private val cardView: CardView = itemView as CardView
         private val starViews = listOf<ImageView>(
             itemView.findViewById(R.id.star1),
@@ -53,6 +54,10 @@ class MaskListAdapter(private val onMaskSelected: (JSONObject) -> Unit,
                 val rating = mask.getDouble("averageRating")
                 val ratingCount = mask.getInt("ratingsCount")
                 ratingText.text = "${String.format("%.1f", rating)} ($ratingCount)"
+
+                val tagsRaw = mask.getString("tags")
+                val tags = tagsRaw.trim('[', ']').split(",").map { it.trim() }
+                tagText.text = tags.joinToString(", ")
 
                 val fullStars = rating.toInt()
                 starViews.forEachIndexed { index, star ->
