@@ -3,6 +3,7 @@ package lt.lastweeknextday.cammask.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +21,8 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
+class CommentsAdapter(private val onReportClick: (String) -> Unit)
+    : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
     private val comments = mutableListOf<JSONObject>()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
@@ -29,6 +31,7 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
         val userName: TextView = view.findViewById(R.id.userName)
         val commentText: TextView = view.findViewById(R.id.commentText)
         val commentDate: TextView = view.findViewById(R.id.commentDate)
+        val reportButton: ImageButton = view.findViewById(R.id.reportButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -91,6 +94,10 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
                 .parse(comment.getString("postedOn"))
         )
+
+        holder.reportButton.setOnClickListener {
+            onReportClick(comment.getString("id"))
+        }
     }
 
     override fun getItemCount() = comments.size

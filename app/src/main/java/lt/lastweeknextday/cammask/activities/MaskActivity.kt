@@ -1,14 +1,20 @@
 package lt.lastweeknextday.cammask.activities
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,10 +22,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.google.android.gms.common.SignInButton
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import lt.lastweeknextday.cammask.adapters.CommentsAdapter
 import lt.lastweeknextday.cammask.misc.Constants
 import lt.lastweeknextday.cammask.adapters.ImageCarouselAdapter
@@ -38,6 +46,7 @@ class MaskActivity : BaseActivity() {
     private lateinit var commentsAdapter: CommentsAdapter
     private var currentRating: Int = 0
     private var isLoggingInOut = false
+    private lateinit var reportDialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +105,9 @@ class MaskActivity : BaseActivity() {
         val tagsRaw = maskData.getString("tags")
         val tags = tagsRaw.trim('[', ']').split(",").map { it.trim() }
         findViewById<TextView>(R.id.tagTextMain).text = tags.joinToString(", ")
+        findViewById<ImageButton>(R.id.reportMaskButton).setOnClickListener {
+            showReportDialog("mask", maskData.getInt("id").toString())
+        }
 
         val imagesList = maskData.getString("images")
             .trim('[', ']')
@@ -111,7 +123,11 @@ class MaskActivity : BaseActivity() {
         )
 
         val commentsList = findViewById<RecyclerView>(R.id.commentsList)
-        commentsAdapter = CommentsAdapter()
+        commentsAdapter = CommentsAdapter(
+            onReportClick = { commentId ->
+                showReportDialog("comment", commentId)
+            }
+        )
         commentsList.layoutManager = LinearLayoutManager(this)
         commentsList.adapter = commentsAdapter
 
@@ -438,6 +454,114 @@ class MaskActivity : BaseActivity() {
                 currentRating = 0
                 updateUserRatingStars()
             }
+        }
+    }
+
+    private fun showReportDialog(itemType: String, itemId: String) {
+        if (!GoogleAuthManager.checkIfLoggedIn()) {
+            Toast.makeText(this, "Please login to report", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        reportDialog = Dialog(this).apply {
+            setContentView(R.layout.dialog_report)
+            setCancelable(false)
+            window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        with(reportDialog) {
+            findViewById<RadioButton>(R.id.reasonNotWorking).visibility =
+                if (itemType == "mask") View.VISIBLE else View.GONE
+
+            val buttonContainer = findViewById<View>(R.id.buttonContainer)
+            val sendProgress = findViewById<ProgressBar>(R.id.sendProgress)
+
+            findViewById<Button>(R.id.cancelButton).setOnClickListener {
+                dismiss()
+            }
+
+            findViewById<Button>(R.id.sendButton).setOnClickListener {
+                val reasonGroup = findViewById<RadioGroup>(R.id.reasonGroup)
+                val selectedReasonId = reasonGroup.checkedRadioButtonId
+
+                if (selectedReasonId == -1) {
+                    Toast.makeText(this@MaskActivity, "Please select a reason", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val reason = when (selectedReasonId) {
+                    R.id.reasonNotWorking -> "not_working"
+                    R.id.reasonHarmful -> "harmful"
+                    R.id.reasonSpam -> "spam"
+                    else -> ""
+                }
+
+                val description = findViewById<TextInputEditText>(R.id.descriptionInput)
+                    .text.toString()
+
+                buttonContainer.visibility = View.INVISIBLE
+                sendProgress.visibility = View.VISIBLE
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        submitReport(
+                            itemType,
+                            itemId,
+                            reason,
+                            description
+                        )
+                        Toast.makeText(this@MaskActivity, "Report sent successfully", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    } catch (e: Exception) {
+                        Log.e("MaskActivity", "Error submitting report", e)
+                        Toast.makeText(this@MaskActivity, "Error sending report", Toast.LENGTH_SHORT).show()
+                        buttonContainer.visibility = View.VISIBLE
+                        sendProgress.visibility = View.GONE
+                    }
+                }
+            }
+        }
+
+        reportDialog.show()
+    }
+
+    private suspend fun submitReport(
+        itemType: String,
+        itemId: String,
+        reason: String,
+        description: String
+    ) = withContext(Dispatchers.IO) {
+        val client = OkHttpClient()
+
+        val reportData = JSONObject().apply {
+            put("reportedItemType", itemType)
+            put("reportedItemId", itemId)
+            put("reporterGoogleId", GoogleAuthManager.getGoogleAccount()?.id)
+            put("reason", reason)
+            put("description", description)
+        }
+
+        val requestBody = reportData.toString()
+            .toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("https://postreport-${Constants.BASE_URL}")
+            .post(requestBody)
+            .build()
+
+        var success = false
+        CoroutineScope(Dispatchers.IO).async {
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    success = true
+                }
+            }
+        }.await()
+        if (!success) {
+            Toast.makeText(this@MaskActivity, "Error sending report", Toast.LENGTH_SHORT).show()
         }
     }
 }

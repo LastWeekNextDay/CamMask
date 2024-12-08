@@ -11,13 +11,29 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-        <TextView
-                android:id="@+id/maskName"
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/maskName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+            <ImageButton
+                    android:id="@+id/reportMaskButton"
+                    android:layout_width="55dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_dialog_alert"
+                    android:contentDescription="Report Mask" />
+
+        </LinearLayout>
 
         <LinearLayout
                 android:id="@+id/ratingContainer"
