@@ -86,7 +86,7 @@ class MainActivity : BaseActivity() {
                 val fileInfo = fileAnalyzer.analyze(applicationContext, uri)
                 Log.d("MainActivity", "File info: $fileInfo")
                 if (fileInfo.extension == "glb") {
-                    maskListAdapter.clearSelection()
+                    unloadSelectedMask()
                     handleModelFile(uri)
                 } else {
                     Toast.makeText(this, "Please select a GLB file", Toast.LENGTH_SHORT).show()
