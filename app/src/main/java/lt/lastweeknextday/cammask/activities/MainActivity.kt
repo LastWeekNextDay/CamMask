@@ -304,7 +304,8 @@ class MainActivity : BaseActivity() {
             val maskUrl = mask.getString("maskUrl")
             Log.d("MainActivity","Loading mask: $maskUrl")
             loadingDialog.show("Loading mask...", transparentBackground = true)
-
+            modelRenderer.clearModel()
+            modelHolder.cleanup()
             modelHolder.loadModelRemote(maskUrl) { success ->
                 loadingDialog.hide()
                 if (success) {
