@@ -51,6 +51,7 @@ class UploadActivity : BaseActivity() {
     private var modelFullName: String = ""
 
     private lateinit var uploadButton: Button
+    private lateinit var uploadProgress: ProgressBar
     private lateinit var loginButton: SignInButton
     private lateinit var loginProgress: ProgressBar
     private var isLoggingInOut = false
@@ -101,13 +102,15 @@ class UploadActivity : BaseActivity() {
         }
 
         uploadButton = findViewById(R.id.uploadButton)
+        uploadProgress = findViewById(R.id.uploadProgress)
+
         uploadButton.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 if (!GoogleAuthManager.checkIfCanUpload()) {
                     Toast.makeText(this@UploadActivity, "You are banned from uploading", Toast.LENGTH_LONG).show()
                     return@launch
                 } else {
-
+                    setUploadLoadingState(true)
                     handleUpload()
                 }
             }
@@ -121,6 +124,16 @@ class UploadActivity : BaseActivity() {
                 setLoginLoadingState(true)
                 googleSignInManager.initiateSignIn()
             }
+        }
+    }
+
+    private fun setUploadLoadingState(loading: Boolean) {
+        if (loading) {
+            uploadButton.visibility = View.INVISIBLE
+            uploadProgress.visibility = View.VISIBLE
+        } else {
+            uploadButton.visibility = View.VISIBLE
+            uploadProgress.visibility = View.GONE
         }
     }
 
@@ -300,8 +313,10 @@ class UploadActivity : BaseActivity() {
 
             if (!success) {
                 showError("Failed to upload mask")
+                setUploadLoadingState(false)
             } else {
                 Toast.makeText(this, "Mask uploaded successfully", Toast.LENGTH_SHORT).show()
+                setUploadLoadingState(false)
                 setResult(Activity.RESULT_OK)
                 finish()
             }
