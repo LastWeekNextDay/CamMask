@@ -276,6 +276,7 @@ class MaskActivity : BaseActivity() {
 
     private suspend fun submitComment(comment: String) {
         var submitted = false
+        var allowed = true
         val commentButton = findViewById<Button>(R.id.submitComment)
         val progressBar = findViewById<View>(R.id.submitCommentProgress)
         commentButton.visibility = View.GONE
@@ -283,6 +284,11 @@ class MaskActivity : BaseActivity() {
         CoroutineScope(Dispatchers.IO).async {
             try {
                 val maskId = maskData.getInt("id").toString()
+
+                if (!GoogleAuthManager.checkIfCanComment()) {
+                    allowed = false
+                    return@async
+                }
 
                 val client = OkHttpClient()
                 val requestBody = JSONObject().apply {
@@ -310,7 +316,11 @@ class MaskActivity : BaseActivity() {
         }.await()
         commentButton.visibility = View.VISIBLE
         progressBar.visibility = View.GONE
-        if (!submitted) {
+        if (!allowed) {
+            CoroutineScope(Dispatchers.Main).launch {
+                Toast.makeText(this@MaskActivity, "You are not allowed to comment", Toast.LENGTH_SHORT).show()
+            }
+        } else if (!submitted) {
             CoroutineScope(Dispatchers.Main).launch {
                 Toast.makeText(this@MaskActivity, "Error submitting comment", Toast.LENGTH_SHORT).show()
             }
